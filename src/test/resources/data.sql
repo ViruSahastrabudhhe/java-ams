@@ -1,0 +1,13 @@
+INSERT INTO users (ID, USERNAME, PASSWORD) VALUES (1, 'admin', 'password');
+INSERT INTO users (ID, USERNAME, PASSWORD) VALUES (2, 'michael', 'pass123');
+INSERT INTO users (ID, USERNAME, PASSWORD) VALUES (3, 'no-own-cars', 'word123');
+INSERT INTO roles (NAME) VALUES ('ROLE_ADMIN');
+INSERT INTO roles (NAME) VALUES ('ROLE_USER');
+INSERT INTO user_roles (user_id, role_id) VALUES (1, 1);
+INSERT INTO user_roles (user_id, role_id) VALUES (2, 1);
+INSERT INTO user_roles (user_id, role_id) VALUES (3, 2);
+INSERT INTO payments (ID, AMOUNT, USER_ID) VALUES (90, 100.00, 1);
+INSERT INTO payments (ID, AMOUNT, USER_ID) VALUES (91, 5.00, 1);
+INSERT INTO payments (ID, AMOUNT, USER_ID) VALUES (92, 250.00, 1);
+INSERT INTO payments (ID, AMOUNT, USER_ID) VALUES (93, 110.10, 1);
+INSERT INTO payments (ID, AMOUNT, USER_ID) VALUES (94, 99.99, 2);
