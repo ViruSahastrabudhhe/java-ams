@@ -24,8 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service("CustomUserDetailsService")
 public class CustomUserDetailsService implements UserDetailsService {
-    private static final Logger logger = Logger.getLogger(CustomUserDetailsService.class.getName());
-
     @Autowired
     private UserRepository userRepository;
 

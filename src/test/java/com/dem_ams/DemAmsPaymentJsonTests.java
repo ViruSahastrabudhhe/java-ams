@@ -1,6 +1,5 @@
 package com.dem_ams;
 
-import com.dem_ams.domain.dto.PaymentFormDTO;
 import com.dem_ams.domain.model.Payment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

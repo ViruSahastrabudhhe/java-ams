@@ -1,27 +1,20 @@
 package com.dem_ams;
 
-import com.dem_ams.domain.dto.PaymentFormDTO;
+import com.dem_ams.domain.dto.PaymentRequest;
 import com.dem_ams.domain.model.Payment;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
-import org.h2.util.json.JSONNumber;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.client.EntityExchangeResult;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.logging.Logger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -85,12 +78,12 @@ public class DemAmsPaymentTests {
     @Test
     @DirtiesContext
     void shouldCreateNewPayment() {
-        PaymentFormDTO savedPaymentFormDTO = new PaymentFormDTO(500.00, 1L);
+        PaymentRequest savedPaymentRequest = new PaymentRequest(500.00, 1L);
 
         clientWithBasicAuth("admin", "password")
                 .post()
                 .uri("/api/payments")
-                .body(savedPaymentFormDTO)
+                .body(savedPaymentRequest)
                 .exchange()
                 .expectStatus().isCreated()
                 .expectBody(Void.class);
@@ -227,13 +220,13 @@ public class DemAmsPaymentTests {
     @Test
     @DirtiesContext
     void shouldUpdateExistingPayment() {
-        PaymentFormDTO paymentForm = new PaymentFormDTO(500.00, null);
+        PaymentRequest paymentForm = new PaymentRequest(500.00, null);
         clientWithBasicAuth("admin", "password")
                 .put()
                 .uri("/api/payments/91")
                 .body(paymentForm)
                 .exchange()
-                .expectStatus().isNoContent()
+                .expectStatus().isOk()
                 .expectBody(Payment.class);
 
         EntityExchangeResult<Payment> response = clientWithBasicAuth("admin", "password")
@@ -253,7 +246,7 @@ public class DemAmsPaymentTests {
 
     @Test
     void shouldNotAllowUsersUpdatingOtherUsersPayment() {
-        PaymentFormDTO michaelsPayment = new PaymentFormDTO(670.67, null);
+        PaymentRequest michaelsPayment = new PaymentRequest(670.67, null);
         clientWithBasicAuth("admin", "password")
                 .put()
                 .uri("/api/payments/94")
@@ -264,7 +257,7 @@ public class DemAmsPaymentTests {
 
     @Test
     void shouldNotUpdateNonExistentPayment() {
-        PaymentFormDTO paymentForm = new PaymentFormDTO(500.00, null);
+        PaymentRequest paymentForm = new PaymentRequest(500.00, null);
         clientWithBasicAuth("admin", "password")
                 .put()
                 .uri("/api/payments/1007")

@@ -1,6 +1,6 @@
 package com.dem_ams.service;
 
-import com.dem_ams.domain.dto.PaymentFormDTO;
+import com.dem_ams.domain.dto.PaymentRequest;
 import com.dem_ams.domain.exception.PaymentNotFoundException;
 import com.dem_ams.domain.model.Payment;
 import com.dem_ams.repository.PaymentRepository;
@@ -9,10 +9,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class PaymentService {
     private final PaymentRepository paymentRepository;
 
@@ -25,13 +25,13 @@ public class PaymentService {
                 .orElseThrow(() -> new PaymentNotFoundException(id));
     }
 
-    public Payment createPayment(PaymentFormDTO paymentFormDTO, Long userID) {
-        Payment createdPayment = new Payment(null, paymentFormDTO.amount(), userID);
+    public Payment createPayment(PaymentRequest paymentRequest, Long userID) {
+        Payment createdPayment = new Payment(null, paymentRequest.amount(), userID);
         return paymentRepository.save(createdPayment);
     }
 
-    public void updatePayment(Long id, PaymentFormDTO paymentFormDTO, Long userID) {
-        Payment updatedPayment = new Payment(id, paymentFormDTO.amount(), userID);
+    public void updatePayment(Long id, PaymentRequest paymentRequest, Long userID) {
+        Payment updatedPayment = new Payment(id, paymentRequest.amount(), userID);
         paymentRepository.save(updatedPayment);
     }
 
