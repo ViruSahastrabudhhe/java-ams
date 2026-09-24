@@ -3,6 +3,7 @@ package com.dem_ams.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 @Data

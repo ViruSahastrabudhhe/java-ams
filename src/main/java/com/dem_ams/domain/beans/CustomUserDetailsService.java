@@ -18,14 +18,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.logging.Logger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service("CustomUserDetailsService")
 public class CustomUserDetailsService implements UserDetailsService {
-    private static final Logger logger = LoggerFactory.getLogger(CustomUserDetailsService.class);
+    private static final Logger logger = Logger.getLogger(CustomUserDetailsService.class.getName());
 
     @Autowired
     private UserRepository userRepository;
@@ -36,14 +35,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         UserModel user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        PasswordEncoder encoder = new BCryptPasswordEncoder();
-        String hashedPassword = encoder.encode(user.getPassword());
-
         CustomUserDetails.CustomUserDetailsBuilder customUser = CustomUserDetails.builder();
         return customUser
                 .id(user.getId())
                 .username(user.getUsername())
-                .password(hashedPassword)
+                .password(user.getPassword())
                 .roles(getAuthorities(user))
                 .build();
     }

@@ -18,4 +18,7 @@ public interface PaymentRepository extends CrudRepository<Payment, Long>, Paging
 
     @Query("SELECT p FROM Payment p WHERE p.user_id = :user_id")
     Page<Payment> findByUserId(@Param("user_id") Long userId, PageRequest pageRequest);
+
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN TRUE ELSE FALSE END FROM Payment p WHERE p.id = :id and p.user_id = :user_id ")
+    boolean existsByIdAndUserId(@Param("id") Long id, @Param("user_id") Long userId);
 }

@@ -51,4 +51,14 @@ class DemAmsApplicationTests {
 		Authentication principal = new UsernamePasswordAuthenticationToken("admin", "password", AuthorityUtils.NO_AUTHORITIES);
 		assertThat(username).isEqualTo(principal.getName());
 	}
+
+	@Test
+	void shouldReturnOkWhenAuthenticatedAccessingPublic() {
+		clientWithBasicAuth("admin", "password")
+				.get()
+				.uri("/api/public")
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class);
+	}
 }

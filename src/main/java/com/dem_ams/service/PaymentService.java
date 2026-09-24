@@ -1,6 +1,7 @@
 package com.dem_ams.service;
 
 import com.dem_ams.domain.dto.PaymentFormDTO;
+import com.dem_ams.domain.exception.PaymentNotFoundException;
 import com.dem_ams.domain.model.Payment;
 import com.dem_ams.repository.PaymentRepository;
 import org.springframework.data.domain.Page;
@@ -19,18 +20,23 @@ public class PaymentService {
         this.paymentRepository = paymentRepository;
     }
 
-    public Payment getPaymentByIdAndUserId(Long id, Long user_id) {
-        Optional<Payment> optionalPayment = paymentRepository.findByIdAndUserId(id, user_id);
-        return optionalPayment.orElse(null);
+    public Payment getPaymentByIdAndUserId(Long id, Long userID) {
+        return paymentRepository.findByIdAndUserId(id, userID)
+                .orElseThrow(() -> new PaymentNotFoundException(id));
     }
 
     public Payment createPayment(PaymentFormDTO paymentFormDTO, Long userID) {
-        Payment payment = new Payment(null, paymentFormDTO.amount(), userID);
-        return paymentRepository.save(payment);
+        Payment createdPayment = new Payment(null, paymentFormDTO.amount(), userID);
+        return paymentRepository.save(createdPayment);
     }
 
-    public Page<Payment> getPayments(Long user_id, Pageable pageable) {
-        return paymentRepository.findByUserId(user_id,
+    public void updatePayment(Long id, PaymentFormDTO paymentFormDTO, Long userID) {
+        Payment updatedPayment = new Payment(id, paymentFormDTO.amount(), userID);
+        paymentRepository.save(updatedPayment);
+    }
+
+    public Page<Payment> getPayments(Long userID, Pageable pageable) {
+        return paymentRepository.findByUserId(userID,
                 PageRequest.of(
                         pageable.getPageNumber(),
                         pageable.getPageSize(),
@@ -38,8 +44,11 @@ public class PaymentService {
                 ));
     }
 
-    public void deletePayment(Payment payment) {
-        paymentRepository.delete(payment);
+    public boolean existsByIdAndUserId(Long id, Long userID) {
+        return paymentRepository.existsByIdAndUserId(id, userID);
     }
 
+    public void deletePaymentById(Long id) {
+        paymentRepository.deleteById(id);
+    }
 }
