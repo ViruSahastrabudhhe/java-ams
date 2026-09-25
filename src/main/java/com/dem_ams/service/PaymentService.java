@@ -11,6 +11,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+
 @Service
 @Transactional
 public class PaymentService {
@@ -26,12 +29,18 @@ public class PaymentService {
     }
 
     public Payment createPayment(PaymentRequest paymentRequest, Long userID) {
-        Payment createdPayment = new Payment(null, paymentRequest.amount(), userID);
+        Payment createdPayment = new Payment();
+        createdPayment.setAmountPaid(paymentRequest.amountPaid());
+        createdPayment.setUser_id(userID);
         return paymentRepository.save(createdPayment);
     }
 
     public void updatePayment(Long id, PaymentRequest paymentRequest, Long userID) {
-        Payment updatedPayment = new Payment(id, paymentRequest.amount(), userID);
+        Payment updatedPayment = new Payment();
+        updatedPayment.setId(id);
+        updatedPayment.setAmountPaid(paymentRequest.amountPaid());
+        updatedPayment.setUser_id(userID);
+        updatedPayment.setDateUpdated(Timestamp.from(Instant.now()));
         paymentRepository.save(updatedPayment);
     }
 
@@ -40,7 +49,7 @@ public class PaymentService {
                 PageRequest.of(
                         pageable.getPageNumber(),
                         pageable.getPageSize(),
-                        pageable.getSortOr(Sort.by(Sort.Direction.ASC, "amount"))
+                        pageable.getSortOr(Sort.by(Sort.Direction.ASC, "amountPaid"))
                 ));
     }
 

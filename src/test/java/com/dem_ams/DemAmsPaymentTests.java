@@ -40,6 +40,7 @@ public class DemAmsPaymentTests {
         EntityExchangeResult<Payment> response = clientWithBasicAuth("admin", "password")
                 .get()
                 .uri("/api/payments/90")
+                .accept(MediaTypes.HAL_JSON)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(Payment.class)
@@ -48,7 +49,7 @@ public class DemAmsPaymentTests {
         Payment payment = response.getResponseBody();
         assertThat(payment).isNotNull();
         assertThat(payment.getId()).isEqualTo(90L);
-        assertThat(payment.getAmount()).isEqualTo(100.00);
+        assertThat(payment.getAmountPaid()).isEqualTo(100.00);
     }
 
     @Test
@@ -56,6 +57,7 @@ public class DemAmsPaymentTests {
         clientWithBasicAuth("admin", "password")
                 .get()
                 .uri("/api/payments/9919")
+                .accept(MediaTypes.HAL_JSON)
                 .exchange()
                 .expectStatus().isNotFound();
     }
@@ -65,12 +67,14 @@ public class DemAmsPaymentTests {
         clientWithBasicAuth("admin", "bad-pw")
                 .get()
                 .uri("/api/payments/90")
+                .accept(MediaTypes.HAL_JSON)
                 .exchange()
                 .expectStatus().isUnauthorized();
 
         clientWithBasicAuth("bad-user", "password")
                 .get()
                 .uri("/api/payments/90")
+                .accept(MediaTypes.HAL_JSON)
                 .exchange()
                 .expectStatus().isUnauthorized();
     }
@@ -91,6 +95,7 @@ public class DemAmsPaymentTests {
         EntityExchangeResult<Payment> response = clientWithBasicAuth("admin", "password")
                 .get()
                 .uri("/api/payments/1")
+                .accept(MediaTypes.HAL_JSON)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(Payment.class)
@@ -99,7 +104,7 @@ public class DemAmsPaymentTests {
         Payment requestedPayment = response.getResponseBody();
         assertThat(requestedPayment).isNotNull();
         assertThat(requestedPayment.getId()).isEqualTo(1L);
-        assertThat(requestedPayment.getAmount()).isEqualTo(500.00);
+        assertThat(requestedPayment.getAmountPaid()).isEqualTo(500.00);
     }
 
     @Test
@@ -118,7 +123,7 @@ public class DemAmsPaymentTests {
         assertThat(page).isEqualTo(4);
 
         JSONArray ids = documentContext.read("$._embedded.paymentList[*].id");
-        JSONArray amounts = documentContext.read("$._embedded.paymentList[*].amount");
+        JSONArray amounts = documentContext.read("$._embedded.paymentList[*].amountPaid");
 
         assertThat(ids).containsExactlyInAnyOrder(90, 91, 92, 93);
         assertThat(amounts).containsExactlyInAnyOrder(5.00, 110.10, 100.00, 250.00);
@@ -162,7 +167,7 @@ public class DemAmsPaymentTests {
     void shouldReturnASortedPageOfPayments() {
         EntityExchangeResult<String> response = clientWithBasicAuth("admin", "password")
                 .get()
-                .uri("/api/payments?page=0&size=1&sort=amount,desc")
+                .uri("/api/payments?page=0&size=1&sort=amountPaid,desc")
                 .accept(MediaTypes.HAL_JSON)
                 .exchange()
                 .expectStatus().isOk()
@@ -174,7 +179,7 @@ public class DemAmsPaymentTests {
         assertThat(read).isNotNull();
         assertThat(read.size()).isEqualTo(1);
 
-        double amount = documentContext.read("$._embedded.paymentList[0].amount");
+        double amount = documentContext.read("$._embedded.paymentList[0].amountPaid");
         assertThat(amount).isEqualTo(250.00);
     }
 
@@ -183,6 +188,7 @@ public class DemAmsPaymentTests {
         EntityExchangeResult<String> response = clientWithBasicAuth("admin", "password")
                 .get()
                 .uri("/api/payments")
+                .accept(MediaTypes.HAL_JSON)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(String.class)
@@ -193,7 +199,7 @@ public class DemAmsPaymentTests {
         assertThat(read).isNotNull();
         assertThat(read.size()).isEqualTo(4);
 
-        JSONArray amount = documentContext.read("$._embedded.paymentList[*].amount");
+        JSONArray amount = documentContext.read("$._embedded.paymentList[*].amountPaid");
         assertThat(amount).containsExactly(5.00, 100.00, 110.10, 250.00);
     }
 
@@ -202,6 +208,7 @@ public class DemAmsPaymentTests {
         clientWithBasicAuth("michael", "pass123")
                 .get()
                 .uri("/api/payments/91")
+                .accept(MediaTypes.HAL_JSON)
                 .exchange()
                 .expectStatus().isNotFound();
     }
@@ -211,6 +218,7 @@ public class DemAmsPaymentTests {
         clientWithBasicAuth("no-own-cars", "word123")
                 .get()
                 .uri("/api/payments/91")
+                .accept(MediaTypes.HAL_JSON)
                 .exchange()
                 .expectStatus().isForbidden()
                 .expectBody(Payment.class)
@@ -232,6 +240,7 @@ public class DemAmsPaymentTests {
         EntityExchangeResult<Payment> response = clientWithBasicAuth("admin", "password")
                 .get()
                 .uri("/api/payments/91")
+                .accept(MediaTypes.HAL_JSON)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(Payment.class)
@@ -241,7 +250,7 @@ public class DemAmsPaymentTests {
         assertThat(payment).isNotNull();
 
         assertThat(payment.getId()).isEqualTo(91L);
-        assertThat(payment.getAmount()).isEqualTo(500.00);
+        assertThat(payment.getAmountPaid()).isEqualTo(500.00);
     }
 
     @Test

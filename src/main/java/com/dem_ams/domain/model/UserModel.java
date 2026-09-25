@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
 import java.util.Collection;
 
 @Entity
@@ -26,4 +27,10 @@ public class UserModel {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Collection<Role> roles;
+
+    private Timestamp date_created;
+
+    private Timestamp date_updated;
+
+    private Timestamp date_deleted;
 }

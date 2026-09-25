@@ -45,22 +45,22 @@ public class DataSeeder implements CommandLineRunner {
         userRepository.save(user);
     }
 
-    private void createPayments() {
-        Double[] amounts = new Double[4];
-        amounts[0] = 100.00;
-        amounts[1] = 5.00;
-        amounts[2] = 250.00;
-        amounts[3] = 110.10;
-
-        Long[] ids = new Long[4];
-        ids[0] = 90L;
-        ids[1] = 91L;
-        ids[2] = 92L;
-        ids[3] = 93L;
-
-        for (int i = 0; i < 4; i++) {
-            Payment payment = new Payment(ids[i], amounts[i], 1L);
-            paymentRepository.save(payment);
-        }
-    }
+//    private void createPayments() {
+//        Double[] amounts = new Double[4];
+//        amounts[0] = 100.00;
+//        amounts[1] = 5.00;
+//        amounts[2] = 250.00;
+//        amounts[3] = 110.10;
+//
+//        Long[] ids = new Long[4];
+//        ids[0] = 90L;
+//        ids[1] = 91L;
+//        ids[2] = 92L;
+//        ids[3] = 93L;
+//
+//        for (int i = 0; i < 4; i++) {
+//            Payment payment = new Payment(ids[i], amounts[i], 1L);
+//            paymentRepository.save(payment);
+//        }
+//    }
 }
