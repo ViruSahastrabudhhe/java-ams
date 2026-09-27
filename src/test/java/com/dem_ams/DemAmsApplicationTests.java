@@ -1,6 +1,5 @@
 package com.dem_ams;
 
-import com.dem_ams.domain.model.Payment;
 import com.dem_ams.domain.model.UserModel;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,13 +8,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.client.EntityExchangeResult;
 import org.springframework.test.web.servlet.client.RestTestClient;
-
-import java.security.Principal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -97,7 +93,7 @@ class DemAmsApplicationTests {
 		assertThat(getUserModel.getEmail()).isEqualTo("jejomar@example.com");
 		assertThat(getUserModel.getUsername()).isEqualTo("jejomar");
 		assertThat(getUserModel.getPassword()).isEqualTo("{noop}password");
-		assertThat(getUserModel.getDateUpdated()).isNotNull();
+		assertThat(getUserModel.getUpdatedAt()).isNotNull();
 
 		Authentication principal = new UsernamePasswordAuthenticationToken("jejomar", "password", AuthorityUtils.NO_AUTHORITIES);
 		assertThat(getUserModel.getUsername()).isEqualTo(principal.getName());

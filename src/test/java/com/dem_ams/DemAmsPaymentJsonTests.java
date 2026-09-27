@@ -8,10 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
-import org.assertj.core.util.Arrays;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -45,7 +43,7 @@ public class DemAmsPaymentJsonTests {
         );
 
         paymentResponsesList = payments.stream()
-                .map(p -> new PaymentResponse(p.getId(), p.getAmountPaid(), p.getUser().getId(), p.getDateCreated(), p.getDateUpdated(), p.getDateDeleted()))
+                .map(p -> new PaymentResponse(p.getId(), p.getAmountPaid(), p.getUser().getId(), p.getCreatedAt(), p.getUpdatedAt(), p.getDeletedAt()))
                 .toList();
     }
 
@@ -54,7 +52,7 @@ public class DemAmsPaymentJsonTests {
         payment.setId(id);
         payment.setAmountPaid(amount);
         payment.setUser(user);
-        payment.setDateCreated(date);
+        payment.setCreatedAt(date);
         return payment;
     }
 
@@ -72,6 +70,9 @@ public class DemAmsPaymentJsonTests {
         assertThat(jsonPayment.write(payment)).hasJsonPathNumberValue("@.user_id");
         assertThat(jsonPayment.write(payment)).extractingJsonPathNumberValue("@.user_id")
                 .isEqualTo(1);
+        assertThat(jsonPayment.write(payment)).hasJsonPathStringValue("@.created_at");
+        assertThat(jsonPayment.write(payment)).extractingJsonPathStringValue("@.created_at")
+                .isEqualTo("2026-09-25T00:37:27.614");
     }
 
     @Test
@@ -81,7 +82,7 @@ public class DemAmsPaymentJsonTests {
                     "id": 90,
                     "amountPaid": 100.00,
                     "user_id": 1,
-                    "dateCreated": "2026-09-25T00:37:27.614"
+                    "created_at": "2026-09-25T00:37:27.614"
                 }
                 """;
 
@@ -102,10 +103,10 @@ public class DemAmsPaymentJsonTests {
     void paymentListDeserializationTest() throws IOException {
         String list = """
                 [
-                    { "id": 90, "amountPaid": 100.00, "user_id": 1, "dateCreated": "2026-09-25T00:37:27.614" },
-                    { "id": 91, "amountPaid": 5.00, "user_id": 1, "dateCreated": "2026-09-25T00:37:27.614"  },
-                    { "id": 92, "amountPaid": 250.00, "user_id": 1, "dateCreated": "2026-09-25T00:37:27.614"  },
-                    { "id": 93, "amountPaid": 110.10, "user_id": 1, "dateCreated": "2026-09-25T00:37:27.614"  }
+                    { "id": 90, "amountPaid": 100.00, "user_id": 1, "created_at": "2026-09-25T00:37:27.614" },
+                    { "id": 91, "amountPaid": 5.00, "user_id": 1, "created_at": "2026-09-25T00:37:27.614"  },
+                    { "id": 92, "amountPaid": 250.00, "user_id": 1, "created_at": "2026-09-25T00:37:27.614"  },
+                    { "id": 93, "amountPaid": 110.10, "user_id": 1, "created_at": "2026-09-25T00:37:27.614"  }
                 ]
                 """;
 

@@ -57,6 +57,7 @@ public class PaymentController {
     ) {
         Payment createdPayment = paymentService.createPayment(paymentRequest, user.getId());
         PaymentResponse paymentResponse = Payment.toJson(createdPayment);
+        logger.info("Created payment: " + paymentResponse.toString());
         return new ResponseEntity<>(paymentAssembler.toModel(paymentResponse), HttpStatus.CREATED);
     }
 
@@ -83,8 +84,9 @@ public class PaymentController {
             return ResponseEntity.notFound().build();
         }
 
-        paymentService.updatePayment(requestedId, paymentForm, user.getId());
+        paymentService.updatePayment(payment, paymentForm);
         PaymentResponse paymentResponse = Payment.toJson(payment);
+        logger.info("Updated payment: " + paymentResponse);
         return new ResponseEntity<>(paymentAssembler.toModel(paymentResponse), HttpStatus.OK);
     }
 

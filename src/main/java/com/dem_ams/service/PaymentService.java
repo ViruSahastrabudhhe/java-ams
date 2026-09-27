@@ -14,10 +14,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.logging.Logger;
+
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 @Service
 @Transactional
 public class PaymentService {
+    private static final Logger LOGGER = Logger.getLogger(PaymentService.class.getName());
+
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
 
@@ -41,18 +46,13 @@ public class PaymentService {
         Payment createdPayment = new Payment();
         createdPayment.setAmountPaid(paymentRequest.amountPaid());
         createdPayment.setUser(userModel);
-        return paymentRepository.save(createdPayment);
+        return paymentRepository.saveAndFlush(createdPayment);
     }
 
-    public void updatePayment(Long id, PaymentRequest paymentRequest, Long userID) {
-        UserModel userModel = userRepository.findById(userID)
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find user with id ", userID));
+    public void updatePayment(Payment paymentToUpdate, PaymentRequest paymentRequest) {
+        paymentToUpdate.setAmountPaid(paymentRequest.amountPaid());
 
-        Payment updatedPayment = new Payment();
-        updatedPayment.setId(id);
-        updatedPayment.setAmountPaid(paymentRequest.amountPaid());
-        updatedPayment.setUser(userModel);
-        paymentRepository.save(updatedPayment);
+        paymentRepository.saveAndFlush(paymentToUpdate);
     }
 
     public Page<Payment> getPayments(Long userID, Pageable pageable) {
