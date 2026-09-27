@@ -5,17 +5,15 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SoftDelete;
 import org.hibernate.annotations.SoftDeleteType;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Set;
 
 @Data
 @Table(name="payments")
 @Entity
 @NoArgsConstructor
+@SoftDelete(strategy = SoftDeleteType.DELETED)
 public class Payment implements Serializable {
 
     @Id

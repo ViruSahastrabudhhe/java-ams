@@ -105,6 +105,8 @@ public class DemAmsPaymentTests {
         assertThat(requestedPayment).isNotNull();
         assertThat(requestedPayment.getId()).isEqualTo(1L);
         assertThat(requestedPayment.getAmountPaid()).isEqualTo(500.00);
+        assertThat(requestedPayment.getDateCreated()).isNotNull();
+        assertThat(requestedPayment.getDateUpdated()).isNull();
     }
 
     @Test
@@ -251,6 +253,8 @@ public class DemAmsPaymentTests {
 
         assertThat(payment.getId()).isEqualTo(91L);
         assertThat(payment.getAmountPaid()).isEqualTo(500.00);
+        assertThat(payment.getDateCreated()).isNotNull();
+        assertThat(payment.getDateUpdated()).isNotNull();
     }
 
     @Test
