@@ -1,11 +1,16 @@
 package com.dem_ams;
 
 import com.dem_ams.domain.dto.PaymentRequest;
+import com.dem_ams.domain.dto.PaymentResponse;
 import com.dem_ams.domain.model.Payment;
+import com.dem_ams.repository.PaymentRepository;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.client.EntityExchangeResult;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,10 +28,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
 @ActiveProfiles("test")
+@ExtendWith(MockitoExtension.class)
 public class DemAmsPaymentTests {
 
     @Autowired
     private RestTestClient client;
+
+    @Mock
+    private PaymentRepository mockPaymentRepository;
 
     private static final Logger logger = Logger.getLogger(DemAmsPaymentTests.class.getName());
 
@@ -37,19 +47,22 @@ public class DemAmsPaymentTests {
 
     @Test
     void shouldReturnExistingPayment() {
-        EntityExchangeResult<Payment> response = clientWithBasicAuth("admin", "password")
+        EntityExchangeResult<PaymentResponse> response = clientWithBasicAuth("admin", "password")
                 .get()
                 .uri("/api/payments/90")
                 .accept(MediaTypes.HAL_JSON)
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(Payment.class)
+                .expectBody(PaymentResponse.class)
                 .returnResult();
 
-        Payment payment = response.getResponseBody();
+        PaymentResponse payment = response.getResponseBody();
         assertThat(payment).isNotNull();
-        assertThat(payment.getId()).isEqualTo(90L);
-        assertThat(payment.getAmountPaid()).isEqualTo(100.00);
+        assertThat(payment.id()).isEqualTo(90L);
+        assertThat(payment.amountPaid()).isEqualTo(100.00);
+        assertThat(payment.user_id()).isEqualTo(1L);
+        assertThat(payment.created_at()).isNotNull();
+        assertThat(payment.updated_at()).isNull();
     }
 
     @Test
@@ -92,21 +105,21 @@ public class DemAmsPaymentTests {
                 .expectStatus().isCreated()
                 .expectBody(Void.class);
 
-        EntityExchangeResult<Payment> response = clientWithBasicAuth("admin", "password")
+        EntityExchangeResult<PaymentResponse> response = clientWithBasicAuth("admin", "password")
                 .get()
                 .uri("/api/payments/1")
                 .accept(MediaTypes.HAL_JSON)
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(Payment.class)
+                .expectBody(PaymentResponse.class)
                 .returnResult();
 
-        Payment requestedPayment = response.getResponseBody();
+        PaymentResponse requestedPayment = response.getResponseBody();
         assertThat(requestedPayment).isNotNull();
-        assertThat(requestedPayment.getId()).isEqualTo(1L);
-        assertThat(requestedPayment.getAmountPaid()).isEqualTo(500.00);
-        assertThat(requestedPayment.getDateCreated()).isNotNull();
-        assertThat(requestedPayment.getDateUpdated()).isNull();
+        assertThat(requestedPayment.id()).isEqualTo(1L);
+        assertThat(requestedPayment.amountPaid()).isEqualTo(500.00);
+        assertThat(requestedPayment.created_at()).isNotNull();
+        assertThat(requestedPayment.updated_at()).isNull();
     }
 
     @Test
@@ -239,22 +252,22 @@ public class DemAmsPaymentTests {
                 .expectStatus().isOk()
                 .expectBody(Payment.class);
 
-        EntityExchangeResult<Payment> response = clientWithBasicAuth("admin", "password")
+        EntityExchangeResult<PaymentResponse> response = clientWithBasicAuth("admin", "password")
                 .get()
                 .uri("/api/payments/91")
                 .accept(MediaTypes.HAL_JSON)
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(Payment.class)
+                .expectBody(PaymentResponse.class)
                 .returnResult();
 
-        Payment payment = response.getResponseBody();
+        PaymentResponse payment = response.getResponseBody();
         assertThat(payment).isNotNull();
 
-        assertThat(payment.getId()).isEqualTo(91L);
-        assertThat(payment.getAmountPaid()).isEqualTo(500.00);
-        assertThat(payment.getDateCreated()).isNotNull();
-        assertThat(payment.getDateUpdated()).isNotNull();
+        assertThat(payment.id()).isEqualTo(91L);
+        assertThat(payment.amountPaid()).isEqualTo(500.00);
+        assertThat(payment.created_at()).isNotNull();
+        assertThat(payment.updated_at()).isNotNull();
     }
 
     @Test
@@ -314,5 +327,20 @@ public class DemAmsPaymentTests {
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody(Void.class);
+    }
+
+    @Test
+    @DirtiesContext
+    void shouldReturnSoftDeletedPayment() {
+        clientWithBasicAuth("admin", "password")
+                .delete()
+                .uri("/api/payments/91")
+                .exchange()
+                .expectStatus().isNoContent()
+                .expectBody(Void.class);
+
+        Optional<Payment> optionalPayment = mockPaymentRepository.findById(91L);
+        assertThat(optionalPayment).isPresent();
+        assertThat(optionalPayment.get().getId()).isEqualTo(91L);
     }
 }

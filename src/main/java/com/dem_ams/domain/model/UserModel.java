@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -34,15 +33,15 @@ public class UserModel {
     )
     private Collection<Role> roles;
 
-    @Column(columnDefinition = "timestamp default CURRENT_TIMESTAMP")
-    private LocalDateTime dateCreated = LocalDateTime.now();
+    @Column(columnDefinition = "timestamp default CURRENT_TIMESTAMP", insertable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    private LocalDateTime dateUpdated;
+    private LocalDateTime updatedAt;
 
-    private LocalDateTime dateDeleted;
+    private LocalDateTime deletedAt;
 
     @PreUpdate
     public void preUpdate() {
-        this.dateUpdated = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 }
