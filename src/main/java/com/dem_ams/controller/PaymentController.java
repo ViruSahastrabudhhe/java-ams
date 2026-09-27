@@ -2,6 +2,7 @@ package com.dem_ams.controller;
 
 import com.dem_ams.domain.assembler.PaymentModelAssembler;
 import com.dem_ams.domain.dto.PaymentRequest;
+import com.dem_ams.domain.dto.PaymentResponse;
 import com.dem_ams.domain.model.CustomUserDetails;
 import com.dem_ams.domain.model.Payment;
 import com.dem_ams.service.PaymentService;
@@ -35,7 +36,7 @@ public class PaymentController {
     }
 
     @GetMapping("/{requestedId}")
-    public ResponseEntity<EntityModel<Payment>> getPaymentById(
+    public ResponseEntity<EntityModel<PaymentResponse>> getPaymentById(
             @PathVariable Long requestedId,
             @AuthenticationPrincipal CustomUserDetails user
     ) {
@@ -44,30 +45,35 @@ public class PaymentController {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(paymentAssembler.toModel(payment));
+        PaymentResponse paymentResponse = Payment.toJson(payment);
+
+        return ResponseEntity.ok(paymentAssembler.toModel(paymentResponse));
     }
 
     @PostMapping
-    public ResponseEntity<EntityModel<Payment>> savePayment(
+    public ResponseEntity<EntityModel<PaymentResponse>> savePayment(
             @RequestBody PaymentRequest paymentRequest,
             @AuthenticationPrincipal CustomUserDetails user
     ) {
         Payment createdPayment = paymentService.createPayment(paymentRequest, user.getId());
-        return new ResponseEntity<>(paymentAssembler.toModel(createdPayment), HttpStatus.CREATED);
+        PaymentResponse paymentResponse = Payment.toJson(createdPayment);
+        return new ResponseEntity<>(paymentAssembler.toModel(paymentResponse), HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<PagedModel<EntityModel<Payment>>> getAllPayments(
+    public ResponseEntity<PagedModel<EntityModel<PaymentResponse>>> getAllPayments(
             Pageable pageable,
             @AuthenticationPrincipal CustomUserDetails user,
-            PagedResourcesAssembler<Payment> pageAssembler
+            PagedResourcesAssembler<PaymentResponse> pageAssembler
     ) {
         Page<Payment> page = paymentService.getPayments(user.getId(), pageable);
-        return ResponseEntity.ok(pageAssembler.toModel(page));
+        Page<PaymentResponse> paymentResponsePage = page.map(Payment::toJson);
+
+        return ResponseEntity.ok(pageAssembler.toModel(paymentResponsePage));
     }
 
     @PutMapping("/{requestedId}")
-    public ResponseEntity<EntityModel<Payment>> updatePayment(
+    public ResponseEntity<EntityModel<PaymentResponse>> updatePayment(
             @PathVariable("requestedId") Long requestedId,
             @RequestBody PaymentRequest paymentForm,
             @AuthenticationPrincipal CustomUserDetails user
@@ -78,7 +84,8 @@ public class PaymentController {
         }
 
         paymentService.updatePayment(requestedId, paymentForm, user.getId());
-        return new ResponseEntity<>(paymentAssembler.toModel(payment), HttpStatus.OK);
+        PaymentResponse paymentResponse = Payment.toJson(payment);
+        return new ResponseEntity<>(paymentAssembler.toModel(paymentResponse), HttpStatus.OK);
     }
 
     @DeleteMapping("/{requestedId}")

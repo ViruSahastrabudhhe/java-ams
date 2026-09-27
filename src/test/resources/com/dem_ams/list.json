@@ -1,6 +1,0 @@
-[
-  {"id":  90, "amountPaid":  100.00, "user_id": 1, "dateCreated": "2026-09-24T16:37:27.614Z", "dateUpdated": null, "dateDeleted": null },
-  {"id":  91, "amountPaid":  5.00, "user_id": 1, "dateCreated": "2026-09-24T16:37:27.614Z", "dateUpdated": null, "dateDeleted": null },
-  {"id":  92, "amountPaid":  250.00, "user_id": 1, "dateCreated": "2026-09-24T16:37:27.614Z", "dateUpdated": null, "dateDeleted": null },
-  {"id":  93, "amountPaid":  110.10, "user_id": 1, "dateCreated": "2026-09-24T16:37:27.614Z", "dateUpdated": null, "dateDeleted": null }
-]

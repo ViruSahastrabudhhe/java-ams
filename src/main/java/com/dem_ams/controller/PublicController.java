@@ -8,6 +8,6 @@ import org.springframework.web.bind.annotation.*;
 public class PublicController {
     @GetMapping
     public ResponseEntity<String> publicGet() {
-        return  ResponseEntity.ok("Hello World");
+        return ResponseEntity.ok("Hello World");
     }
 }

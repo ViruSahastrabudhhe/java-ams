@@ -1,16 +1,22 @@
 package com.dem_ams.domain.model;
 
+import com.dem_ams.domain.dto.PaymentResponse;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SoftDelete;
+import org.hibernate.annotations.SoftDeleteType;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import java.sql.Timestamp;
-import java.time.Instant;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Set;
 
 @Data
 @Table(name="payments")
 @Entity
 @NoArgsConstructor
-public class Payment {
+public class Payment implements Serializable {
 
     @Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -18,11 +24,30 @@ public class Payment {
 
     private Double amountPaid;
 
-    private Long user_id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="user_id", nullable=false)
+    private UserModel user;
 
-    private Timestamp dateCreated = Timestamp.from(Instant.now());
+    @Column(columnDefinition = "timestamp default CURRENT_TIMESTAMP")
+    private LocalDateTime dateCreated = LocalDateTime.now();
 
-    private Timestamp dateUpdated;
+    private LocalDateTime dateUpdated;
 
-    private Timestamp dateDeleted;
+    private LocalDateTime dateDeleted;
+
+    @PreUpdate
+    public void preUpdate() {
+        this.dateUpdated = LocalDateTime.now();
+    }
+
+    public static PaymentResponse toJson(Payment payment) {
+        return new PaymentResponse(
+                payment.getId(),
+                payment.getAmountPaid(),
+                payment.getUser().getId(),
+                payment.getDateCreated(),
+                payment.getDateUpdated(),
+                payment.getDateDeleted()
+        );
+    }
 }

@@ -13,12 +13,12 @@ import java.util.Optional;
 
 @Repository
 public interface PaymentRepository extends CrudRepository<Payment, Long>, PagingAndSortingRepository<Payment, Long> {
-    @Query("SELECT p FROM Payment p WHERE p.id = :id and p.user_id = :user_id")
+    @Query("SELECT p FROM Payment p WHERE p.id = :id and p.user.id = :user_id and p.dateDeleted is null")
     Optional<Payment> findByIdAndUserId(@Param("id") Long id, @Param("user_id") Long userId);
 
-    @Query("SELECT p FROM Payment p WHERE p.user_id = :user_id")
+    @Query("SELECT p FROM Payment p WHERE p.user.id = :user_id")
     Page<Payment> findByUserId(@Param("user_id") Long userId, PageRequest pageRequest);
 
-    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN TRUE ELSE FALSE END FROM Payment p WHERE p.id = :id and p.user_id = :user_id ")
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN TRUE ELSE FALSE END FROM Payment p WHERE p.id = :id and p.user.id = :user_id ")
     boolean existsByIdAndUserId(@Param("id") Long id, @Param("user_id") Long userId);
 }

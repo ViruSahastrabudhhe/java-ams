@@ -31,6 +31,10 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        if (userRepository.existsByUsername("admin")) {
+            return;
+        }
+        createAdminUser();
     }
 
     private void createAdminUser() {

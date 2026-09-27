@@ -2,10 +2,12 @@ package com.dem_ams.domain.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Collection;
 
 @Entity
@@ -13,10 +15,14 @@ import java.util.Collection;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class UserModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(unique = true)
+    private String email;
+
     private String username;
     private String password;
 
@@ -28,9 +34,15 @@ public class UserModel {
     )
     private Collection<Role> roles;
 
-    private Timestamp date_created;
+    @Column(columnDefinition = "timestamp default CURRENT_TIMESTAMP")
+    private LocalDateTime dateCreated = LocalDateTime.now();
 
-    private Timestamp date_updated;
+    private LocalDateTime dateUpdated;
 
-    private Timestamp date_deleted;
+    private LocalDateTime dateDeleted;
+
+    @PreUpdate
+    public void preUpdate() {
+        this.dateUpdated = LocalDateTime.now();
+    }
 }

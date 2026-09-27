@@ -1,6 +1,6 @@
-INSERT INTO users (ID, USERNAME, PASSWORD) VALUES (1, 'admin', '{noop}password');
-INSERT INTO users (ID, USERNAME, PASSWORD) VALUES (2, 'michael', '{noop}pass123');
-INSERT INTO users (ID, USERNAME, PASSWORD) VALUES (3, 'no-own-cars', '{noop}word123');
+INSERT INTO users (ID, EMAIL, USERNAME, PASSWORD, DATE_CREATED) VALUES (1, 'admin@example.com', 'admin', '{noop}password', '2026-09-25T00:37:27.614');
+INSERT INTO users (ID, EMAIL, USERNAME, PASSWORD, DATE_CREATED) VALUES (2, 'michael@example.com', 'michael', '{noop}pass123', '2026-09-25T00:37:27.614');
+INSERT INTO users (ID, EMAIL, USERNAME, PASSWORD, DATE_CREATED) VALUES (3, 'noowncars@example.com', 'no-own-cars', '{noop}word123', '2026-09-25T00:37:27.614');
 INSERT INTO roles (NAME) VALUES ('ROLE_ADMIN');
 INSERT INTO roles (NAME) VALUES ('ROLE_TENANT');
 INSERT INTO roles (NAME) VALUES ('ROLE_LANDLORD');

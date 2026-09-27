@@ -122,8 +122,8 @@ public class DemAmsPaymentTests {
         int page = documentContext.read("$.page.totalElements");
         assertThat(page).isEqualTo(4);
 
-        JSONArray ids = documentContext.read("$._embedded.paymentList[*].id");
-        JSONArray amounts = documentContext.read("$._embedded.paymentList[*].amountPaid");
+        JSONArray ids = documentContext.read("$._embedded.paymentResponseList[*].id");
+        JSONArray amounts = documentContext.read("$._embedded.paymentResponseList[*].amountPaid");
 
         assertThat(ids).containsExactlyInAnyOrder(90, 91, 92, 93);
         assertThat(amounts).containsExactlyInAnyOrder(5.00, 110.10, 100.00, 250.00);
@@ -175,11 +175,11 @@ public class DemAmsPaymentTests {
                 .returnResult();
 
         DocumentContext documentContext = JsonPath.parse(response.getResponseBody());
-        JSONArray read = documentContext.read("$._embedded.paymentList");
+        JSONArray read = documentContext.read("$._embedded.paymentResponseList");
         assertThat(read).isNotNull();
         assertThat(read.size()).isEqualTo(1);
 
-        double amount = documentContext.read("$._embedded.paymentList[0].amountPaid");
+        double amount = documentContext.read("$._embedded.paymentResponseList[0].amountPaid");
         assertThat(amount).isEqualTo(250.00);
     }
 
@@ -195,11 +195,11 @@ public class DemAmsPaymentTests {
                 .returnResult();
 
         DocumentContext documentContext = JsonPath.parse(response.getResponseBody());
-        JSONArray read = documentContext.read("$._embedded.paymentList");
+        JSONArray read = documentContext.read("$._embedded.paymentResponseList");
         assertThat(read).isNotNull();
         assertThat(read.size()).isEqualTo(4);
 
-        JSONArray amount = documentContext.read("$._embedded.paymentList[*].amountPaid");
+        JSONArray amount = documentContext.read("$._embedded.paymentResponseList[*].amountPaid");
         assertThat(amount).containsExactly(5.00, 100.00, 110.10, 250.00);
     }
 

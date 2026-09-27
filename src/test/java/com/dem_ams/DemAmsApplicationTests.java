@@ -1,6 +1,7 @@
 package com.dem_ams;
 
 import com.dem_ams.domain.model.Payment;
+import com.dem_ams.domain.model.UserModel;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
@@ -9,6 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.client.EntityExchangeResult;
 import org.springframework.test.web.servlet.client.RestTestClient;
@@ -36,20 +38,23 @@ class DemAmsApplicationTests {
 	}
 
 	@Test
-	void shouldReturnUsername() {
-		EntityExchangeResult<String> result = clientWithBasicAuth("admin", "password")
+	void shouldReturnUser() {
+		EntityExchangeResult<UserModel> result = clientWithBasicAuth("admin", "password")
 				.get()
-				.uri("/api/users/username")
+				.uri("/api/users/1")
 				.exchange()
 				.expectStatus().isOk()
-				.expectBody(String.class)
+				.expectBody(UserModel.class)
 				.returnResult();
 
-		String username = result.getResponseBody();
-		assertThat(username).isEqualTo("admin");
+		UserModel userModel = result.getResponseBody();
+		assertThat(userModel).isNotNull();
+		assertThat(userModel.getUsername()).isEqualTo("admin");
+		assertThat(userModel.getPassword()).isEqualTo("{noop}password");
+		assertThat(userModel.getId()).isEqualTo(1);
 
 		Authentication principal = new UsernamePasswordAuthenticationToken("admin", "password", AuthorityUtils.NO_AUTHORITIES);
-		assertThat(username).isEqualTo(principal.getName());
+		assertThat(userModel.getUsername()).isEqualTo(principal.getName());
 	}
 
 	@Test
@@ -60,5 +65,41 @@ class DemAmsApplicationTests {
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class);
+	}
+
+	@Test
+	@DirtiesContext
+	void shouldUpdateUser() {
+		UserModel updatedUserModel = new UserModel();
+		updatedUserModel.setUsername("jejomar");
+		updatedUserModel.setEmail("jejomar@example.com");
+		updatedUserModel.setPassword("{noop}password");
+
+		clientWithBasicAuth("admin", "password")
+				.put()
+				.uri("/api/users/1")
+				.body(updatedUserModel)
+				.exchange()
+				.expectStatus().isNoContent()
+				.expectBody(UserModel.class)
+				.returnResult();
+
+		EntityExchangeResult<UserModel> response = clientWithBasicAuth("jejomar", "password")
+				.get()
+				.uri("/api/users/1")
+				.exchange()
+				.expectBody(UserModel.class)
+				.returnResult();
+
+		UserModel getUserModel = response.getResponseBody();
+		assertThat(getUserModel).isNotNull();
+		assertThat(getUserModel.getId()).isEqualTo(1);
+		assertThat(getUserModel.getEmail()).isEqualTo("jejomar@example.com");
+		assertThat(getUserModel.getUsername()).isEqualTo("jejomar");
+		assertThat(getUserModel.getPassword()).isEqualTo("{noop}password");
+		assertThat(getUserModel.getDateUpdated()).isNotNull();
+
+		Authentication principal = new UsernamePasswordAuthenticationToken("jejomar", "password", AuthorityUtils.NO_AUTHORITIES);
+		assertThat(getUserModel.getUsername()).isEqualTo(principal.getName());
 	}
 }

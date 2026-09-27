@@ -18,6 +18,7 @@ import java.util.List;
 public class CustomUserDetails implements UserDetails {
 
     private Long id;
+    private String email;
     private String username;
     private String password;
     private List<? extends GrantedAuthority> roles;
