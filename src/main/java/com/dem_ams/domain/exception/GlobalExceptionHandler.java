@@ -13,4 +13,10 @@ public class GlobalExceptionHandler {
     String resourceNotFoundHandler(ResourceNotFoundException ex) {
         return ex.getMessage();
     }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    String internalServerErrorHandler(Exception ex) {
+        return ex.getMessage();
+    }
 }
