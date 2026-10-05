@@ -19,6 +19,15 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, PagingA
     @Query("SELECT p FROM Payment p WHERE p.user.id = :user_id and p.deletedAt is null")
     Page<Payment> findByUserId(@Param("user_id") Long userId, PageRequest pageRequest);
 
-    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN TRUE ELSE FALSE END FROM Payment p WHERE p.id = :id and p.user.id = :user_id and p.deletedAt is null")
-    boolean existsByIdAndUserId(@Param("id") Long id, @Param("user_id") Long userId);
+    @Query("SELECT p FROM Payment p WHERE p.id = :id and p.deletedAt is null")
+    Optional<Payment> findById(@Param("id") Long id);
+
+    @Query("SELECT p FROM Payment p WHERE p.deletedAt is null")
+    Page<Payment> findAll(PageRequest pageRequest);
+
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN TRUE ELSE FALSE END FROM Payment p WHERE p.id = :id and p.deletedAt is null")
+    boolean existsById(@Param("id") Long id);
+
+    @Query("SELECT p FROM Payment p WHERE p.deletedAt is not null")
+    Page<Payment> findAllWhereDeleted(PageRequest pageRequest);
 }

@@ -1,8 +1,7 @@
-package com.dem_ams.domain.assembler;
+package com.dem_ams.domain.model.assembler;
 
 import com.dem_ams.controller.PaymentController;
 import com.dem_ams.domain.dto.PaymentResponse;
-import com.dem_ams.domain.model.Payment;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;

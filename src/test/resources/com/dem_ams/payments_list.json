@@ -1,6 +1,6 @@
 [
-  {"id":  90, "amountPaid":  100.00, "user_id": 1, "created_at": "2026-09-25T00:37:27.614", "updated_at": null, "deleted_at": null },
-  {"id":  91, "amountPaid":  5.00, "user_id": 1, "created_at": "2026-09-25T00:37:27.614", "updated_at": null, "deleted_at": null },
-  {"id":  92, "amountPaid":  250.00, "user_id": 1, "created_at": "2026-09-25T00:37:27.614", "updated_at": null, "deleted_at": null },
-  {"id":  93, "amountPaid":  110.10, "user_id": 1, "created_at": "2026-09-25T00:37:27.614", "updated_at": null, "deleted_at": null }
+  {"id":  90, "amount_paid":  100.00, "amount_change": 0.0, "payment_type": "CASH", "invoice_id": 110, "tenant_profile_id": 11, "user_id": 3, "created_at": "2026-09-25T00:37:27.614", "updated_at": null, "deleted_at": null },
+  {"id":  91, "amount_paid":  5.00, "amount_change": 0.0, "payment_type": "CASH", "invoice_id": 111, "tenant_profile_id": 11, "user_id": 3, "created_at": "2026-09-25T00:37:27.614", "updated_at": null, "deleted_at": null },
+  {"id":  92, "amount_paid":  250.00, "amount_change": 0.0, "payment_type": "CASH", "invoice_id": 112, "tenant_profile_id": 11, "user_id": 3, "created_at": "2026-09-25T00:37:27.614", "updated_at": null, "deleted_at": null },
+  {"id":  93, "amount_paid":  110.10, "amount_change": 0.0, "payment_type": "CASH", "invoice_id": 113, "tenant_profile_id": 11, "user_id": 3, "created_at": "2026-09-25T00:37:27.614", "updated_at": null, "deleted_at": null }
 ]

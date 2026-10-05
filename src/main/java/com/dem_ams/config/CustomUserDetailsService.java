@@ -1,24 +1,21 @@
-package com.dem_ams.domain.beans;
+package com.dem_ams.config;
 
+import com.dem_ams.domain.model.Permission;
 import com.dem_ams.domain.model.CustomUserDetails;
 import com.dem_ams.domain.model.Role;
 import com.dem_ams.domain.model.UserModel;
 import com.dem_ams.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.logging.Logger;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,10 +40,18 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .build();
     }
 
-    private List<GrantedAuthority> getAuthorities(UserModel user) {
-        return user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName()))
-                .collect(Collectors.toList());
+    private Set<GrantedAuthority> getAuthorities(UserModel user) {
+//        return user.getRoles().stream()
+//                .map(role -> new SimpleGrantedAuthority(role.getName()))
+//                .collect(Collectors.toList());
+        Set<GrantedAuthority> authorities = new HashSet<>();
+        for (Role role : user.getRoles()) {
+            authorities.add(new SimpleGrantedAuthority(role.getName()));
+            for (Permission permission : role.getPermissions()) {
+                authorities.add(new SimpleGrantedAuthority(permission.getName()));
+            }
+        }
+        return authorities;
     }
 }
 

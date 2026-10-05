@@ -1,6 +1,7 @@
 package com.dem_ams.controller;
 
-import com.dem_ams.domain.assembler.PaymentModelAssembler;
+import com.dem_ams.domain.model.Role;
+import com.dem_ams.domain.model.assembler.PaymentModelAssembler;
 import com.dem_ams.domain.dto.PaymentRequest;
 import com.dem_ams.domain.dto.PaymentResponse;
 import com.dem_ams.domain.model.CustomUserDetails;
@@ -13,7 +14,9 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.logging.Logger;
@@ -35,18 +38,22 @@ public class PaymentController {
         this.paymentAssembler = paymentAssembler;
     }
 
-    @GetMapping("/{requestedId}")
+    @GetMapping("/{paymentId}")
     public ResponseEntity<EntityModel<PaymentResponse>> getPaymentById(
-            @PathVariable Long requestedId,
+            @PathVariable Long paymentId,
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        Payment payment = paymentService.getPaymentByIdAndUserId(requestedId, user.getId());
+        Payment payment;
+        if (user.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            payment = paymentService.getPaymentById(paymentId);
+        } else {
+            payment = paymentService.getPaymentByIdAndUserId(paymentId, user.getId());
+        }
+
         if (payment == null) {
             return ResponseEntity.notFound().build();
         }
-
         PaymentResponse paymentResponse = Payment.toJson(payment);
-
         return ResponseEntity.ok(paymentAssembler.toModel(paymentResponse));
     }
 
@@ -57,7 +64,6 @@ public class PaymentController {
     ) {
         Payment createdPayment = paymentService.createPayment(paymentRequest, user.getId());
         PaymentResponse paymentResponse = Payment.toJson(createdPayment);
-        logger.info("Created payment: " + paymentResponse.toString());
         return new ResponseEntity<>(paymentAssembler.toModel(paymentResponse), HttpStatus.CREATED);
     }
 
@@ -67,39 +73,52 @@ public class PaymentController {
             @AuthenticationPrincipal CustomUserDetails user,
             PagedResourcesAssembler<PaymentResponse> pageAssembler
     ) {
-        Page<Payment> page = paymentService.getPayments(user.getId(), pageable);
-        Page<PaymentResponse> paymentResponsePage = page.map(Payment::toJson);
+        Page<Payment> page;
+        if (user.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            page = paymentService.getPaymentsNoUserId(pageable);
+        } else {
+            page = paymentService.getPayments(user.getId(), pageable);
+        }
 
+        Page<PaymentResponse> paymentResponsePage = page.map(Payment::toJson);
         return ResponseEntity.ok(pageAssembler.toModel(paymentResponsePage));
     }
 
-    @PutMapping("/{requestedId}")
+    @PutMapping("/{paymentId}")
     public ResponseEntity<EntityModel<PaymentResponse>> updatePayment(
-            @PathVariable("requestedId") Long requestedId,
+            @PathVariable("paymentId") Long paymentId,
             @RequestBody PaymentRequest paymentForm,
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        Payment payment = paymentService.getPaymentByIdAndUserId(requestedId, user.getId());
+        Payment payment;
+        if (user.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            payment = paymentService.getPaymentById(paymentId);
+        } else {
+            payment = paymentService.getPaymentByIdAndUserId(paymentId, user.getId());
+        }
+
         if (payment == null) {
             return ResponseEntity.notFound().build();
         }
 
         paymentService.updatePayment(payment, paymentForm);
         PaymentResponse paymentResponse = Payment.toJson(payment);
-        logger.info("Updated payment: " + paymentResponse);
         return new ResponseEntity<>(paymentAssembler.toModel(paymentResponse), HttpStatus.OK);
     }
 
-    @DeleteMapping("/{requestedId}")
+    @DeleteMapping("/{paymentId}")
     public ResponseEntity<Void> deletePayment(
-            @PathVariable("requestedId") Long requestedId,
+            @PathVariable("paymentId") Long paymentId,
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        if (!paymentService.existsByIdAndUserId(requestedId, user.getId())) {
+        if (!user.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
             return ResponseEntity.notFound().build();
         }
 
-        paymentService.deletePaymentById(requestedId);
+        if (!paymentService.existsById(paymentId)) {
+            return ResponseEntity.notFound().build();
+        }
+        paymentService.deletePaymentById(paymentId);
         return ResponseEntity.noContent().build();
     }
 }
