@@ -6,6 +6,8 @@ INSERT INTO users (ID, EMAIL, USERNAME, PASSWORD, CREATED_AT)
 VALUES (3, 'tenant@example.com', 'tenant', '{noop}pass123', '2026-05-25T00:37:27.614');
 INSERT INTO users (ID, EMAIL, USERNAME, PASSWORD, CREATED_AT)
 VALUES (4, 'renter@example.com', 'renter', '{noop}pass456', '2026-08-25T00:37:27.614');
+INSERT INTO users (ID, EMAIL, USERNAME, PASSWORD, CREATED_AT)
+VALUES (5, 'notenantprofile@example.com', 'notenant', '{noop}pass123', '2026-08-25T00:37:27.614');
 
 INSERT INTO roles (NAME) VALUES ('ROLE_ADMIN');
 INSERT INTO roles (NAME) VALUES ('ROLE_TENANT');
@@ -15,24 +17,44 @@ INSERT INTO permissions (id, NAME) VALUES (1, 'CREATE_PAYMENTS');
 INSERT INTO permissions (id, NAME) VALUES (2, 'UPDATE_PAYMENTS');
 INSERT INTO permissions (id, NAME) VALUES (3, 'GET_PAYMENTS');
 INSERT INTO permissions (id, NAME) VALUES (4, 'DELETE_PAYMENTS');
+INSERT INTO permissions (id, NAME) VALUES (5, 'CREATE_INVOICES');
+INSERT INTO permissions (id, NAME) VALUES (6, 'UPDATE_INVOICES');
+INSERT INTO permissions (id, NAME) VALUES (7, 'GET_INVOICES');
+INSERT INTO permissions (id, NAME) VALUES (8, 'DELETE_INVOICES');
+INSERT INTO permissions (id, NAME) VALUES (9, 'CREATE_TENANT_PROFILES');
+INSERT INTO permissions (id, NAME) VALUES (10, 'UPDATE_TENANT_PROFILES');
+INSERT INTO permissions (id, NAME) VALUES (11, 'GET_TENANT_PROFILES');
+INSERT INTO permissions (id, NAME) VALUES (12, 'DELETE_TENANT_PROFILES');
 
 INSERT INTO roles_permissions (role_id, permission_id) VALUES (1, 1);
 INSERT INTO roles_permissions (role_id, permission_id) VALUES (1, 2);
 INSERT INTO roles_permissions (role_id, permission_id) VALUES (1, 3);
 INSERT INTO roles_permissions (role_id, permission_id) VALUES (1, 4);
+INSERT INTO roles_permissions (role_id, permission_id) VALUES (1, 5);
+INSERT INTO roles_permissions (role_id, permission_id) VALUES (1, 6);
+INSERT INTO roles_permissions (role_id, permission_id) VALUES (1, 7);
+INSERT INTO roles_permissions (role_id, permission_id) VALUES (1, 8);
+INSERT INTO roles_permissions (role_id, permission_id) VALUES (1, 9);
 
 INSERT INTO roles_permissions (role_id, permission_id) VALUES (3, 1);
 INSERT INTO roles_permissions (role_id, permission_id) VALUES (3, 2);
 INSERT INTO roles_permissions (role_id, permission_id) VALUES (3, 3);
 INSERT INTO roles_permissions (role_id, permission_id) VALUES (3, 4);
+INSERT INTO roles_permissions (role_id, permission_id) VALUES (3, 5);
+INSERT INTO roles_permissions (role_id, permission_id) VALUES (3, 6);
+INSERT INTO roles_permissions (role_id, permission_id) VALUES (3, 7);
+INSERT INTO roles_permissions (role_id, permission_id) VALUES (3, 8);
 
 INSERT INTO roles_permissions (role_id, permission_id) VALUES (2, 1);
 INSERT INTO roles_permissions (role_id, permission_id) VALUES (2, 3);
+INSERT INTO roles_permissions (role_id, permission_id) VALUES (2, 7);
+INSERT INTO roles_permissions (role_id, permission_id) VALUES (2, 9);
 
 INSERT INTO user_roles (user_id, role_id) VALUES (1, 1);
 INSERT INTO user_roles (user_id, role_id) VALUES (2, 3);
 INSERT INTO user_roles (user_id, role_id) VALUES (3, 2);
 INSERT INTO user_roles (user_id, role_id) VALUES (4, 2);
+INSERT INTO user_roles (user_id, role_id) VALUES (5, 2);
 
 INSERT INTO tenant_profiles (id, first_name, middle_name, last_name, user_id)
 VALUES (11, 'JOHN', 'MAN', 'TENANT', 3);
@@ -48,7 +70,7 @@ VALUES (112, 25, 4500.00, 'PAID', '2026-08-01', 3, 11, '2026-08-01T00:37:27.614'
 INSERT INTO invoices (id, invoice_number, invoice_total, invoice_status, due_date, user_id, tenant_profile_id, created_at)
 VALUES (113, 26, 4500.00, 'PAID', '2026-09-01', 3, 11, '2026-09-01T00:37:27.614');
 INSERT INTO invoices (id, invoice_number, invoice_total, invoice_status, due_date, user_id, tenant_profile_id, created_at)
-VALUES (114, 27, 5000.00, 'CREATED', '2026-09-01', 4, 12, '2026-09-01T00:37:27.614');
+VALUES (114, 27, 5000.00, 'DRAFT', '2026-09-01', 4, 12, '2026-09-01T00:37:27.614');
 
 /* it honestly gets to a point where i cant even read shit properly anymore */
 INSERT INTO invoice_lines (id, invoice_id, item_name, description, quantity, unit_price, total_price, created_at)

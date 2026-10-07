@@ -4,7 +4,7 @@ import com.dem_ams.domain.model.Permission;
 import com.dem_ams.domain.model.CustomUserDetails;
 import com.dem_ams.domain.model.Role;
 import com.dem_ams.domain.model.UserModel;
-import com.dem_ams.repository.UserRepository;
+import com.dem_ams.repository.UserModelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,19 +15,18 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.transaction.annotation.Transactional;
 
 @Service("CustomUserDetailsService")
 public class CustomUserDetailsService implements UserDetailsService {
     @Autowired
-    private UserRepository userRepository;
+    private UserModelRepository userModelRepository;
 
     @Transactional(readOnly = true)
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserModel user = userRepository.findByUsername(username)
+        UserModel user = userModelRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         CustomUserDetails.CustomUserDetailsBuilder customUser = CustomUserDetails.builder();

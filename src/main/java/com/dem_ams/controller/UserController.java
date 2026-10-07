@@ -2,7 +2,8 @@ package com.dem_ams.controller;
 
 import com.dem_ams.domain.model.CustomUserDetails;
 import com.dem_ams.domain.model.UserModel;
-import com.dem_ams.repository.UserRepository;
+import com.dem_ams.repository.UserModelRepository;
+import com.dem_ams.service.UserModelService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -12,40 +13,38 @@ import java.util.Optional;
 @RequestMapping("/api/users")
 @RestController
 public class UserController {
-    private final UserRepository userRepository;
+    private final UserModelService userModelService;
 
-    public UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserController(UserModelService userModelService) {
+        this.userModelService = userModelService;
     }
 
     @GetMapping("/{requestedId}")
     public ResponseEntity<UserModel> getUser(
             @PathVariable Long requestedId,
-            @AuthenticationPrincipal CustomUserDetails user
+            @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        Optional<UserModel> userModel = userRepository.findById(requestedId);
-        if  (userModel.isPresent()) {
-            return ResponseEntity.ok(userModel.get());
-        }
-        return ResponseEntity.notFound().build();
+        UserModel userModel = userModelService.getUserModelForUser(requestedId, principal);
+        return ResponseEntity.ok(userModel);
+    }
+
+    @GetMapping("/{requestedId}/info")
+    public ResponseEntity<UserModel> getUserInfo(
+            @PathVariable Long requestedId,
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        UserModel userModel = userModelService.getUserModelForUser(requestedId, principal);
+        return ResponseEntity.ok(userModel);
     }
 
     @PutMapping("/{requestedId}")
     public ResponseEntity<UserModel> updateUser(
+            @PathVariable Long requestedId,
             @RequestBody UserModel userModelRequest,
-            @AuthenticationPrincipal CustomUserDetails user
+            @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        Optional<UserModel> userModel = userRepository.findById(user.getId());
-        if (!userModel.isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        UserModel updatedUserModel = userModel.get();
-        updatedUserModel.setEmail(userModelRequest.getEmail());
-        updatedUserModel.setUsername(userModelRequest.getUsername());
-        updatedUserModel.setPassword(userModelRequest.getPassword());
-        userRepository.save(updatedUserModel);
-
+        UserModel userModel = userModelService.getUserModelForUser(requestedId, principal);
+        userModelService.updateUserModel(userModel, userModelRequest);
         return ResponseEntity.noContent().build();
     }
 }
