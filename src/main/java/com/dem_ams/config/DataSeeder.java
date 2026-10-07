@@ -3,7 +3,6 @@ package com.dem_ams.config;
 import com.dem_ams.domain.exception.ResourceNotFoundException;
 import com.dem_ams.domain.model.*;
 import com.dem_ams.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -17,37 +16,46 @@ import java.util.stream.Collectors;
 @Component
 public class DataSeeder implements CommandLineRunner {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserModelRepository userModelRepository;
+    private final RoleRepository roleRepository;
+    private final TenantProfileRepository tenantProfileRepository;
+    private final PermissionRepository permissionRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final InvoiceRepository invoiceRepository;
+    private final PaymentRepository paymentRepository;
 
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private TenantProfileRepository tenantProfileRepository;
-
-    @Autowired
-    private PermissionRepository permissionRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private InvoiceRepository invoiceRepository;
-
-    @Autowired
-    private PaymentRepository paymentRepository;
-
+    private final String[] permissionNames = {
+            "CREATE_PAYMENTS", "UPDATE_PAYMENTS", "GET_PAYMENTS", "DELETE_PAYMENTS",
+            "CREATE_INVOICES", "UPDATE_INVOICES", "GET_INVOICES", "DELETE_INVOICES",
+    };
     private List<UserModel> userModels;
     private List<TenantProfile> tenantProfiles;
     private List<Invoice> invoices;
 
+    public DataSeeder(
+            UserModelRepository userModelRepository,
+            RoleRepository roleRepository,
+            TenantProfileRepository tenantProfileRepository,
+            PermissionRepository permissionRepository,
+            InvoiceRepository invoiceRepository,
+            PaymentRepository paymentRepository,
+            PasswordEncoder passwordEncoder
+    ) {
+        this.userModelRepository = userModelRepository;
+        this.roleRepository = roleRepository;
+        this.tenantProfileRepository = tenantProfileRepository;
+        this.permissionRepository = permissionRepository;
+        this.invoiceRepository = invoiceRepository;
+        this.paymentRepository = paymentRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
     @Override
     public void run(String... args) throws Exception {
         if (permissionRepository.count() > 0
-                || userRepository.existsByUsername("admin")
+                || userModelRepository.existsByUsername("admin")
                 || roleRepository.count() > 0
-                || userRepository.count() > 0
+                || userModelRepository.count() > 0
                 || tenantProfileRepository.count() > 0
                 || invoiceRepository.count() > 0
                 || paymentRepository.count() > 0
@@ -64,10 +72,6 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedPermissions() {
-        String[] permissionNames = new String[]{
-                "CREATE_PAYMENTS", "UPDATE_PAYMENTS", "GET_PAYMENTS", "DELETE_PAYMENTS",
-                "CREATE_INVOICES", "UPDATE_INVOICES", "GET_INVOICES", "DELETE_INVOICES",
-        };
         for (int i = 0; i < permissionNames.length; i++) {
             Permission permission = new Permission();
             permission.setName(permissionNames[i]);
@@ -78,7 +82,7 @@ public class DataSeeder implements CommandLineRunner {
     private void seedTenantAndLandlordRoles() {
         Role tenant = new Role();
         tenant.setName("ROLE_TENANT");
-        tenant.setPermissions(new HashSet<>());
+        tenant.setPermissions(getTenantPermissions());
 
         Role landlord = new Role();
         landlord.setName("ROLE_LANDLORD");
@@ -99,7 +103,7 @@ public class DataSeeder implements CommandLineRunner {
         user.setEmail("admin@example.com");
         user.setPassword(passwordEncoder.encode("password"));
         user.setRoles(Set.of(adminRole));
-        userRepository.save(user);
+        userModelRepository.save(user);
     }
 
     private Set<Permission> getAdminPermissions() {
@@ -114,13 +118,21 @@ public class DataSeeder implements CommandLineRunner {
                 .collect(Collectors.toSet());
     }
 
+    private Set<Permission> getTenantPermissions() {
+        Set<String> permissions = Set.of("GET_PAYMENTS", "CREATE_PAYMENTS", "GET_INVOICES");
+
+        return permissionRepository.findAll().stream()
+                .filter(p -> permissions.contains(p.getName()))
+                .collect(Collectors.toSet());
+    }
+
     private void seedTenantUserAccounts() {
-        Set<Role> tenantRole = new HashSet<>();
-        tenantRole.add(roleRepository.findById(2L).orElseThrow(() -> new ResourceNotFoundException("Could not find role with id", 2L)));
+        Role tenantRole = roleRepository.findById(2L).orElseThrow(() -> new ResourceNotFoundException("Could not find role with id", 2L));
 
         userModels = List.of(
-                createUserHelper("tenant@example.com", "tenant", "pass123", tenantRole),
-                createUserHelper("renter@example.com", "renter", "word456", tenantRole)
+                createUserHelper("tenant@example.com", "tenant", "pass123", Set.of(tenantRole)),
+                createUserHelper("renter@example.com", "renter", "word456", Set.of(tenantRole)),
+                createUserHelper("notenant@example.com", "notenant", "pass123", Set.of(tenantRole))
         );
     }
 
@@ -134,7 +146,7 @@ public class DataSeeder implements CommandLineRunner {
     private void seedInvoices() {
         invoices = List.of(
             createInvoiceHelper(23, 4500.00, Invoice.InvoiceStatus.PAID, LocalDate.of(2026, 6, 1), userModels.get(0), tenantProfiles.get(0)),
-            createInvoiceHelper(27, 5000.00, Invoice.InvoiceStatus.CREATED, LocalDate.of(2026, 9, 1), userModels.get(1), tenantProfiles.get(1))
+            createInvoiceHelper(27, 5000.00, Invoice.InvoiceStatus.DRAFT, LocalDate.of(2026, 9, 1), userModels.get(1), tenantProfiles.get(1))
         );
     }
 
@@ -151,7 +163,7 @@ public class DataSeeder implements CommandLineRunner {
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
         user.setRoles(roles);
-        return userRepository.saveAndFlush(user);
+        return userModelRepository.saveAndFlush(user);
     }
 
     private TenantProfile createTenantProfileHelper(

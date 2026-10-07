@@ -40,4 +40,8 @@ public class CustomUserDetails implements UserDetails {
     public String getUsername() {
         return this.username;
     }
+
+    public boolean isAdmin() {
+        return this.roles.contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+    }
 }

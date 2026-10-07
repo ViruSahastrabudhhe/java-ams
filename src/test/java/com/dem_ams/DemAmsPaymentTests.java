@@ -39,12 +39,6 @@ public class DemAmsPaymentTests {
 
     private static final Logger logger = Logger.getLogger(DemAmsPaymentTests.class.getName());
 
-    private RestTestClient clientWithBasicAuth(String username, String password) {
-        return client.mutate()
-                .defaultHeaders(headers -> headers.setBasicAuth(username, password))
-                .build();
-    }
-
     @Test
     void shouldReturnExistingPayment() {
         EntityExchangeResult<PaymentResponse> response = clientWithBasicAuth("tenant", "pass123")
@@ -66,7 +60,43 @@ public class DemAmsPaymentTests {
     }
 
     @Test
+    void shouldReturnAnyPaymentForAdmin() {
+        EntityExchangeResult<PaymentResponse> response = clientWithBasicAuth("admin", "password")
+                .get()
+                .uri("/api/payments/90")
+                .accept(MediaTypes.HAL_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(PaymentResponse.class)
+                .returnResult();
+
+        PaymentResponse payment = response.getResponseBody();
+        assertThat(payment).isNotNull();
+        assertThat(payment.id()).isEqualTo(90L);
+        assertThat(payment.amount_paid()).isEqualTo(100.00);
+        assertThat(payment.user_id()).isEqualTo(3L);
+        assertThat(payment.created_at()).isNotNull();
+        assertThat(payment.updated_at()).isNull();
+    }
+
+    @Test
+    void shouldNotAllowAccessToPaymentTheyDoNotOwn() {
+        clientWithBasicAuth("renter", "pass456")
+                .get()
+                .uri("/api/payments/91")
+                .accept(MediaTypes.HAL_JSON)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
     void shouldNotReturnNonExistentPayment() {
+        clientWithBasicAuth("tenant", "pass123")
+                .get()
+                .uri("/api/payments/9919")
+                .accept(MediaTypes.HAL_JSON)
+                .exchange()
+                .expectStatus().isNotFound();
         clientWithBasicAuth("admin", "password")
                 .get()
                 .uri("/api/payments/9919")
@@ -95,17 +125,7 @@ public class DemAmsPaymentTests {
     @Test
     @DirtiesContext
     void shouldCreateNewPayment() {
-        double amountPaid, amountChange;
-        Long invoice_id, tenant_profile_id, user_id;
-
-        PaymentRequest savedPaymentRequest = new PaymentRequest(
-                amountPaid=500.00,
-                amountChange=0.00,
-                Payment.PaymentType.CASH,
-                invoice_id=110L,
-                tenant_profile_id=11L,
-                user_id=3L
-        );
+        PaymentRequest savedPaymentRequest = createPaymentRequest(500.00, 0.00, Payment.PaymentType.CASH, 110L, 11L);
 
         clientWithBasicAuth("tenant", "pass123")
                 .post()
@@ -189,6 +209,28 @@ public class DemAmsPaymentTests {
     }
 
     @Test
+    void shouldReturnAnyPageOfPaymentsForAdmin() {
+        EntityExchangeResult<String> response = clientWithBasicAuth("admin", "password")
+                .get()
+                .uri("/api/payments")
+                .accept(MediaTypes.HAL_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class)
+                .returnResult();
+
+        DocumentContext documentContext = JsonPath.parse(response.getResponseBody());
+        int page = documentContext.read("$.page.totalElements");
+        assertThat(page).isEqualTo(5);
+
+        JSONArray ids = documentContext.read("$._embedded.paymentResponseList[*].id");
+        JSONArray amounts = documentContext.read("$._embedded.paymentResponseList[*].amount_paid");
+
+        assertThat(ids).containsExactlyInAnyOrder(90, 91, 92, 93, 94);
+        assertThat(amounts).containsExactlyInAnyOrder(5.00, 110.10, 100.00, 250.00, 99.99);
+    }
+
+    @Test
     void shouldReturnASortedPageOfPayments() {
         EntityExchangeResult<String> response = clientWithBasicAuth("tenant", "pass123")
                 .get()
@@ -229,13 +271,43 @@ public class DemAmsPaymentTests {
     }
 
     @Test
-    void shouldNotAllowAccessToPaymentTheyDoNotOwn() {
-        clientWithBasicAuth("renter", "pass456")
+    void shouldReturnAnySortedPageOfPaymentsForAdmin() {
+        EntityExchangeResult<String> response = clientWithBasicAuth("admin", "password")
                 .get()
-                .uri("/api/payments/91")
+                .uri("/api/payments?page=0&size=1&sort=amountPaid,desc")
                 .accept(MediaTypes.HAL_JSON)
                 .exchange()
-                .expectStatus().isNotFound();
+                .expectStatus().isOk()
+                .expectBody(String.class)
+                .returnResult();
+
+        DocumentContext documentContext = JsonPath.parse(response.getResponseBody());
+        JSONArray read = documentContext.read("$._embedded.paymentResponseList");
+        assertThat(read).isNotNull();
+        assertThat(read.size()).isEqualTo(1);
+
+        double amount = documentContext.read("$._embedded.paymentResponseList[0].amount_paid");
+        assertThat(amount).isEqualTo(250.00);
+    }
+
+    @Test
+    void shouldReturnAnySortedPageOfPaymentsWithoutParametersAndUseDefaultValuesForAdmin() {
+        EntityExchangeResult<String> response = clientWithBasicAuth("admin", "password")
+                .get()
+                .uri("/api/payments")
+                .accept(MediaTypes.HAL_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class)
+                .returnResult();
+
+        DocumentContext documentContext = JsonPath.parse(response.getResponseBody());
+        JSONArray read = documentContext.read("$._embedded.paymentResponseList");
+        assertThat(read).isNotNull();
+        assertThat(read.size()).isEqualTo(5);
+
+        JSONArray amount = documentContext.read("$._embedded.paymentResponseList[*].amount_paid");
+        assertThat(amount).containsExactly(5.00, 99.99, 100.00, 110.10, 250.00);
     }
 
     @Test
@@ -254,24 +326,13 @@ public class DemAmsPaymentTests {
                 .accept(MediaTypes.HAL_JSON)
                 .exchange()
                 .expectStatus().isForbidden()
-                .expectBody(Payment.class)
-                .returnResult();
+                .expectBody(Payment.class);
     }
 
     @Test
     @DirtiesContext
     void shouldUpdateExistingPayment() {
-        double amountPaid, amountChange;
-        Long invoice_id, tenant_profile_id, user_id;
-
-        PaymentRequest savedPaymentRequest = new PaymentRequest(
-                amountPaid=670.67,
-                amountChange=0.00,
-                Payment.PaymentType.CASH,
-                invoice_id=110L,
-                tenant_profile_id=11L,
-                user_id=3L
-        );
+        PaymentRequest savedPaymentRequest = createPaymentRequest(670.67, 0.00, Payment.PaymentType.CASH, 110L, 11L);
 
         clientWithBasicAuth("admin", "password")
                 .put()
@@ -298,18 +359,37 @@ public class DemAmsPaymentTests {
         assertThat(payment.created_at()).isNotNull();
         assertThat(payment.updated_at()).isNotNull();
     }
-//
+
+    @Test
+    void shouldNotAllowTenantToUpdateTheirPaymentOrAnyPaymentsAtAll() {
+        PaymentRequest savedPaymentRequest = createPaymentRequest(670.67, 0.00, Payment.PaymentType.CASH, 110L, 11L);
+
+        clientWithBasicAuth("tenant", "pass123")
+                .put()
+                .uri("/api/payments/91")
+                .body(savedPaymentRequest)
+                .exchange()
+                .expectStatus().isForbidden();
+
+        clientWithBasicAuth("tenant", "pass123")
+                .put()
+                .uri("/api/payments/94")
+                .body(savedPaymentRequest)
+                .exchange()
+                .expectStatus().isForbidden();
+    }
+
 //    @Test
 //    void shouldNotAllowUsersUpdatingOtherUsersPayment() {
 //        double amountPaid, amountChange;
-//        Long invoice_id, tenant_profile_id, user_id;
+//        Long invoiceId, tenantProfileId, user_id;
 //
 //        PaymentRequest savedPaymentRequest = new PaymentRequest(
 //                amountPaid=670.67,
 //                amountChange=0.00,
 //                Payment.PaymentType.CASH,
-//                invoice_id=110L,
-//                tenant_profile_id=11L,
+//                invoiceId=110L,
+//                tenantProfileId=11L,
 //                user_id=3L
 //        );
 //
@@ -323,17 +403,7 @@ public class DemAmsPaymentTests {
 
     @Test
     void shouldNotUpdateNonExistentPayment() {
-        double amountPaid, amountChange;
-        Long invoice_id, tenant_profile_id, user_id;
-
-        PaymentRequest savedPaymentRequest = new PaymentRequest(
-                amountPaid=670.67,
-                amountChange=0.00,
-                Payment.PaymentType.CASH,
-                invoice_id=110L,
-                tenant_profile_id=11L,
-                user_id=3L
-        );
+        PaymentRequest savedPaymentRequest = createPaymentRequest(670.67, 0.00, Payment.PaymentType.CASH, 110L, 11L);
 
         clientWithBasicAuth("admin", "password")
                 .put()
@@ -385,8 +455,7 @@ public class DemAmsPaymentTests {
                 .delete()
                 .uri("/api/payments/1007")
                 .exchange()
-                .expectStatus().isNotFound()
-                .expectBody(Void.class);
+                .expectStatus().isNotFound();
     }
 
 //    @Test
@@ -411,4 +480,17 @@ public class DemAmsPaymentTests {
 //        assertThat(payment).isNotNull();
 //        assertThat(payment.deleted_at()).isNotNull();
 //    }
+
+    private RestTestClient clientWithBasicAuth(String username, String password) {
+        return client.mutate()
+                .defaultHeaders(headers -> headers.setBasicAuth(username, password))
+                .build();
+    }
+
+    private static PaymentRequest createPaymentRequest(
+            Double amountPaid, Double amountChange, Payment.PaymentType paymentType,
+            Long invoiceId, Long tenantProfileId
+    ) {
+        return new PaymentRequest(amountPaid, amountChange, paymentType, invoiceId, tenantProfileId);
+    }
 }

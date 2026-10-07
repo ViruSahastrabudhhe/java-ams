@@ -34,8 +34,8 @@ class DemAmsApplicationTests {
 	}
 
 	@Test
-	void shouldReturnUser() {
-		EntityExchangeResult<UserModel> result = clientWithBasicAuth("admin", "password")
+	void shouldReturnExistingUser() {
+		EntityExchangeResult<UserModel> response = clientWithBasicAuth("admin", "password")
 				.get()
 				.uri("/api/users/1")
 				.exchange()
@@ -43,7 +43,7 @@ class DemAmsApplicationTests {
 				.expectBody(UserModel.class)
 				.returnResult();
 
-		UserModel userModel = result.getResponseBody();
+		UserModel userModel = response.getResponseBody();
 		assertThat(userModel).isNotNull();
 		assertThat(userModel.getUsername()).isEqualTo("admin");
 		assertThat(userModel.getPassword()).isEqualTo("{noop}password");
@@ -51,6 +51,24 @@ class DemAmsApplicationTests {
 
 		Authentication principal = new UsernamePasswordAuthenticationToken("admin", "password", AuthorityUtils.NO_AUTHORITIES);
 		assertThat(userModel.getUsername()).isEqualTo(principal.getName());
+	}
+
+	@Test
+	void shouldNotReturnNonExistentUser() {
+		clientWithBasicAuth("admin", "password")
+				.get()
+				.uri("/api/users/888/info")
+				.exchange()
+				.expectStatus().isNotFound();
+	}
+
+	@Test
+	void shouldNotAllowAccessToUserTheyDoNotOwn() {
+		clientWithBasicAuth("tenant", "pass123")
+				.get()
+				.uri("/api/users/4/info")
+				.exchange()
+				.expectStatus().isForbidden();
 	}
 
 	@Test
@@ -65,7 +83,7 @@ class DemAmsApplicationTests {
 
 	@Test
 	@DirtiesContext
-	void shouldUpdateUser() {
+	void shouldUpdateExistingUser() {
 		UserModel updatedUserModel = new UserModel();
 		updatedUserModel.setUsername("jejomar");
 		updatedUserModel.setEmail("jejomar@example.com");
