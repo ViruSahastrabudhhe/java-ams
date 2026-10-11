@@ -17,7 +17,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, PagingA
     Optional<Payment> findByIdAndUserId(@Param("id") Long id, @Param("user_id") Long userId);
 
     @Query("SELECT p FROM Payment p WHERE p.user.id = :user_id and p.deletedAt is null")
-    Page<Payment> findByUserId(@Param("user_id") Long userId, PageRequest pageRequest);
+    Page<Payment> findAllByUserId(@Param("user_id") Long userId, PageRequest pageRequest);
 
     @Query("SELECT p FROM Payment p WHERE p.id = :id and p.deletedAt is null")
     Optional<Payment> findById(@Param("id") Long id);

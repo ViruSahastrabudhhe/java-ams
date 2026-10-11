@@ -44,4 +44,8 @@ public class CustomUserDetails implements UserDetails {
     public boolean isAdmin() {
         return this.roles.contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
     }
+
+    public boolean isLandlord() {
+        return this.roles.contains(new SimpleGrantedAuthority("ROLE_LANDLORD"));
+    }
 }
