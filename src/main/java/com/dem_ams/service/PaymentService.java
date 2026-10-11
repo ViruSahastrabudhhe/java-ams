@@ -58,10 +58,8 @@ public class PaymentService {
     public Payment createPayment(PaymentRequest paymentRequest, Long userId) {
         UserModel userModel = userModelRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Could not find user with id ", userId));
-        Invoice invoice = invoiceRepository.findById(paymentRequest.invoiceId())
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find invoice with id ", paymentRequest.invoiceId()));
-        TenantProfile tenantProfile = tenantProfileRepository.findById(paymentRequest.tenantProfileId())
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find tenant profile with id ", paymentRequest.tenantProfileId()));
+        Invoice invoice = getInvoiceById(paymentRequest.invoiceId());
+        TenantProfile tenantProfile = getTenantProfileById(paymentRequest.tenantProfileId());
 
         Payment paymentToCreate = new Payment();
         paymentToCreate.setAmountPaid(paymentRequest.amountPaid());
@@ -73,7 +71,7 @@ public class PaymentService {
         return paymentRepository.saveAndFlush(paymentToCreate);
     }
 
-    public Page<Payment> getPaymentsForUser(CustomUserDetails principal, Pageable pageable) {
+    public Page<Payment> getPaymentsForUser(Pageable pageable, CustomUserDetails principal) {
         if (principal.isAdmin()) {
             return getAllPayments(pageable);
         }
@@ -81,7 +79,7 @@ public class PaymentService {
     }
 
     private Page<Payment> getPaymentsByUserId(Long userId, Pageable pageable) {
-        return paymentRepository.findByUserId(userId,
+        return paymentRepository.findAllByUserId(userId,
                 PageRequest.of(
                         pageable.getPageNumber(),
                         pageable.getPageSize(),
@@ -104,13 +102,11 @@ public class PaymentService {
         paymentToUpdate.setPaymentType(paymentRequest.paymentType());
 
         if (paymentRequest.invoiceId().describeConstable().isPresent()) {
-            Invoice invoice = invoiceRepository.findById(paymentRequest.invoiceId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Could not find invoice with id ", paymentRequest.invoiceId()));
+            Invoice invoice = getInvoiceById(paymentRequest.invoiceId());
             paymentToUpdate.setInvoice(invoice);
         }
         if (paymentRequest.tenantProfileId().describeConstable().isPresent()) {
-            TenantProfile tenantProfile = tenantProfileRepository.findById(paymentRequest.tenantProfileId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Could not find tenant profile with id ", paymentRequest.tenantProfileId()));
+            TenantProfile tenantProfile = getTenantProfileById(paymentRequest.tenantProfileId());
             paymentToUpdate.setTenantProfile(tenantProfile);
         }
 
@@ -119,5 +115,15 @@ public class PaymentService {
 
     public void deletePaymentById(Long id) {
         paymentRepository.deleteById(id);
+    }
+
+    private Invoice getInvoiceById(Long id) {
+        return invoiceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find invoice with id ", id));
+    }
+
+    private TenantProfile getTenantProfileById(Long id) {
+        return tenantProfileRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find tenant profile with id ", id));
     }
 }

@@ -28,14 +28,20 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(request -> request
                     // probably not a good thing to do, but it should work
-                    .requestMatchers(HttpMethod.POST, "/api/payments/**").hasAuthority("CREATE_PAYMENTS")
-                    .requestMatchers(HttpMethod.PUT, "/api/payments/**").hasAuthority("UPDATE_PAYMENTS")
-                    .requestMatchers(HttpMethod.GET, "/api/payments/**").hasAuthority("GET_PAYMENTS")
-                    .requestMatchers(HttpMethod.DELETE, "/api/payments/**").hasAuthority("DELETE_PAYMENTS")
-                    .requestMatchers("/api/invoices/**").hasAnyRole("ADMIN", "LANDLORD")
-                    .requestMatchers("/api/tenants/**").hasAnyRole("TENANT", "ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/api/payments/**").hasAuthority("payments:create")
+                    .requestMatchers(HttpMethod.PUT, "/api/payments/**").hasAuthority("payments:update")
+                    .requestMatchers(HttpMethod.GET, "/api/payments/**").hasAuthority("payments:read")
+                    .requestMatchers(HttpMethod.DELETE, "/api/payments/**").hasAuthority("payments:delete")
+                    .requestMatchers("/api/tenants/**").hasAnyRole("ADMIN", "TENANT")
                     .requestMatchers("/api/users/*/info").hasRole("ADMIN")
-                    .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "TENANT", "LANDLORD")
+                    .requestMatchers("/api/users/**").authenticated()
+                    .requestMatchers("/api/landlords/**").hasAnyRole("ADMIN", "LANDLORD")
+                    // TODO: use hasAuthority for invoices instead
+                    .requestMatchers("/api/invoices/**").hasAnyRole("ADMIN", "LANDLORD")
+                    .requestMatchers(HttpMethod.POST, "/api/properties/**").hasAuthority("properties:create")
+                    .requestMatchers(HttpMethod.PUT, "/api/properties/**").hasAuthority("properties:update")
+                    .requestMatchers(HttpMethod.DELETE, "/api/properties/**").hasAuthority("properties:delete")
+                    .requestMatchers(HttpMethod.GET, "/api/properties/**").hasAuthority("properties:read")
                     .requestMatchers("/api/public/**").permitAll()
                     .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
