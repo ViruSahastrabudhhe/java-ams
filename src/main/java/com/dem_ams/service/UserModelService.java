@@ -21,15 +21,19 @@ public class UserModelService {
             return getUserModelById(id);
         }
 
-        return getUserModelByUserId(principal.getId());
+        return getUserModelByUserId(principal.getUser().getId());
+    }
+
+    public UserModel getUserModelByUsername(String username) {
+        return userModelRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("Could not find user with username", username));
     }
 
     private UserModel getUserModelByUserId(Long userId) {
-        return userModelRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Could not find user with id", userId));
+        return userModelRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Could not find user with id", String.valueOf(userId)));
     }
 
     private UserModel getUserModelById(Long id) {
-        return userModelRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Could not find user with id", id));
+        return userModelRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Could not find user with id", String.valueOf(id)));
     }
 
     public void updateUserModel(UserModel userModelToUpdate, UserModel userModelRequest) {

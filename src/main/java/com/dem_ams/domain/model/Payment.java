@@ -27,9 +27,8 @@ public class Payment {
     @Column(name="amount_paid")
     private Double amountPaid;
 
-    @Generated
-    @Column(columnDefinition = "double precision default 0.0")
-    private Double amountChange;
+    @Column(columnDefinition = "numeric(12,2) default 0.0")
+    private Double amountChange = 0.0;
 
     @Enumerated(EnumType.STRING)
     private PaymentType paymentType;

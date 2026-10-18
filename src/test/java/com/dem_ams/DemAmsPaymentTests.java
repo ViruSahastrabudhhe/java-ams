@@ -54,7 +54,7 @@ public class DemAmsPaymentTests {
         assertThat(payment).isNotNull();
         assertThat(payment.id()).isEqualTo(90L);
         assertThat(payment.amount_paid()).isEqualTo(100.00);
-        assertThat(payment.user_id()).isEqualTo(3L);
+        assertThat(payment.user_id()).isEqualTo(12);
         assertThat(payment.created_at()).isNotNull();
         assertThat(payment.updated_at()).isNull();
     }
@@ -74,7 +74,7 @@ public class DemAmsPaymentTests {
         assertThat(payment).isNotNull();
         assertThat(payment.id()).isEqualTo(90L);
         assertThat(payment.amount_paid()).isEqualTo(100.00);
-        assertThat(payment.user_id()).isEqualTo(3L);
+        assertThat(payment.user_id()).isEqualTo(12);
         assertThat(payment.created_at()).isNotNull();
         assertThat(payment.updated_at()).isNull();
     }

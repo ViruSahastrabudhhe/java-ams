@@ -51,7 +51,7 @@ public class PaymentController {
             @RequestBody PaymentRequest paymentRequest,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        Payment payment = paymentService.createPayment(paymentRequest, principal.getId());
+        Payment payment = paymentService.createPayment(paymentRequest, principal.getUser().getId());
         return new ResponseEntity<>(paymentAssembler.toModel(PaymentResponse.from(payment)), HttpStatus.CREATED);
     }
 

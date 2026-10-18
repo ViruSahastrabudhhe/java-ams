@@ -64,7 +64,7 @@ public class PropertyController {
             @RequestBody PropertyRequest propertyRequest,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        Property property = propertyService.createProperty(propertyRequest, principal.getId());
+        Property property = propertyService.createProperty(propertyRequest, principal.getUser().getId());
         return new ResponseEntity<>(assembler.toModel(PropertyResponse.from(property)), HttpStatus.CREATED);
     }
 

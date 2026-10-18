@@ -35,3 +35,4 @@ build/
 ### Properties ###
 application.yaml
 application-test.yaml
+flyway.properties

@@ -41,10 +41,10 @@ public class DemAmsPaymentJsonTests {
         );
 
         List<Invoice> invoices = List.of(
-                createInvoice(110L, 23, 4500.00, Invoice.InvoiceStatus.PAID, LocalDate.of(2026, 6, 1), tenantProfiles.get(0), user, LocalDateTime.of(2026, 6, 1, 0, 37, 27, 614_000_000)),
-                createInvoice(111L, 24, 4500.00, Invoice.InvoiceStatus.PAID, LocalDate.of(2026, 7, 1), tenantProfiles.get(0), user, LocalDateTime.of(2026, 7, 1, 0, 37, 27, 614_000_000)),
-                createInvoice(112L, 25, 4500.00, Invoice.InvoiceStatus.PAID, LocalDate.of(2026, 8, 1), tenantProfiles.get(0), user, LocalDateTime.of(2026, 8, 1, 0, 37, 27, 614_000_000)),
-                createInvoice(113L, 26, 4500.00, Invoice.InvoiceStatus.PAID, LocalDate.of(2026, 9, 1), tenantProfiles.get(0), user, LocalDateTime.of(2026, 9, 1, 0, 37, 27, 614_000_000))
+                createInvoice(110L, 4500.00, Invoice.InvoiceStatus.PAID, LocalDate.of(2026, 6, 1), tenantProfiles.get(0), user, LocalDateTime.of(2026, 6, 1, 0, 37, 27, 614_000_000)),
+                createInvoice(111L, 4500.00, Invoice.InvoiceStatus.PAID, LocalDate.of(2026, 7, 1), tenantProfiles.get(0), user, LocalDateTime.of(2026, 7, 1, 0, 37, 27, 614_000_000)),
+                createInvoice(112L, 4500.00, Invoice.InvoiceStatus.PAID, LocalDate.of(2026, 8, 1), tenantProfiles.get(0), user, LocalDateTime.of(2026, 8, 1, 0, 37, 27, 614_000_000)),
+                createInvoice(113L, 4500.00, Invoice.InvoiceStatus.PAID, LocalDate.of(2026, 9, 1), tenantProfiles.get(0), user, LocalDateTime.of(2026, 9, 1, 0, 37, 27, 614_000_000))
         );
 
         List<Payment> payments = List.of(
@@ -55,18 +55,7 @@ public class DemAmsPaymentJsonTests {
         );
 
         paymentResponsesList = payments.stream()
-                .map(p -> createPaymentResponse(
-                        p.getId(),
-                        p.getAmountPaid(),
-                        p.getAmountChange(),
-                        p.getPaymentType(),
-                        p.getInvoice().getId(),
-                        p.getTenantProfile().getId(),
-                        p.getUser().getId(),
-                        p.getCreatedAt(),
-                        p.getUpdatedAt(),
-                        p.getDeletedAt()
-                ))
+                .map(PaymentResponse::from)
                 .toList();
     }
 
@@ -89,7 +78,6 @@ public class DemAmsPaymentJsonTests {
 
     private static Invoice createInvoice(
             Long id,
-            Integer invoiceNumber,
             Double invoiceTotal,
             Invoice.InvoiceStatus invoiceStatus,
             LocalDate dueDate,
@@ -99,7 +87,6 @@ public class DemAmsPaymentJsonTests {
         Invoice invoice = new Invoice();
 
         invoice.setId(id);
-        invoice.setInvoiceNumber(invoiceNumber);
         invoice.setInvoiceTotal(invoiceTotal);
         invoice.setInvoiceStatus(invoiceStatus);
         invoice.setDueDate(dueDate);
@@ -128,32 +115,6 @@ public class DemAmsPaymentJsonTests {
         payment.setUser(user);
         payment.setCreatedAt(date);
         return payment;
-    }
-
-    private static PaymentResponse createPaymentResponse(
-            Long id,
-            Double amountPaid,
-            Double amountChange,
-            Payment.PaymentType paymentType,
-            Long invoiceId,
-            Long tenantProfileId,
-            Long userId,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt,
-            LocalDateTime deletedAt) {
-        return new PaymentResponse(
-                id,
-                amountPaid,
-                amountChange,
-                paymentType,
-                invoiceId,
-                tenantProfileId,
-                userId,
-                createdAt,
-                updatedAt,
-                deletedAt
-        );
-
     }
 
     @Test

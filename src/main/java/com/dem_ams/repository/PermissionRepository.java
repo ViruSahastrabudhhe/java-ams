@@ -2,6 +2,7 @@ package com.dem_ams.repository;
 
 import com.dem_ams.domain.model.Permission;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Set;
 

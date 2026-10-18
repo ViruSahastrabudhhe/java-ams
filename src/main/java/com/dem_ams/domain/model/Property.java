@@ -1,8 +1,11 @@
 package com.dem_ams.domain.model;
 
+import com.dem_ams.domain.model.enums.BillingType;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 
@@ -18,15 +21,23 @@ public class Property {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "property", cascade = CascadeType.ALL)
-    private PropertyDetail propertyDetail;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="landlordProfileId", nullable=false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private LandlordProfile landlordProfile;
 
-    @OneToOne(mappedBy = "property")
-    private Lease lease;
+    @Column(nullable=false)
+    private String name;
+    @Column(nullable=false)
+    private String propertyType;
+    @Column(nullable=false)
+    private Double propertyValue;
+    @Enumerated(EnumType.STRING)
+    private BillingType billingType;
+    private Double size;
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     @Column(columnDefinition = "timestamp default CURRENT_TIMESTAMP", insertable = false, updatable = false)
     @CreationTimestamp

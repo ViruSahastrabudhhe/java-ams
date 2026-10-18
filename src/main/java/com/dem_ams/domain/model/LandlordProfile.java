@@ -19,13 +19,14 @@ public class LandlordProfile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String firstName;
-    private String middleName;
-    private String lastName;
-
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserModel user;
+
+    private String firstName;
+    private String middleName;
+    private String lastName;
+    private String phoneNumber;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

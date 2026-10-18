@@ -2,17 +2,11 @@ package com.dem_ams;
 
 import com.dem_ams.domain.dto.PropertyRequest;
 import com.dem_ams.domain.dto.PropertyResponse;
-import com.dem_ams.domain.model.BillingType;
-import com.dem_ams.domain.model.LandlordProfile;
-import com.dem_ams.domain.model.Property;
-import com.dem_ams.domain.model.PropertyDetail;
+import com.dem_ams.domain.model.enums.BillingType;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -56,9 +50,7 @@ public class DemAmsPropertyTests {
         assertThat(response.property_type()).isEqualTo("Apartments");
         assertThat(response.property_value()).isEqualTo(4500.00);
         assertThat(response.billing_type()).isEqualTo(BillingType.MONTHLY);
-        assertThat(response.bedroom_quantity()).isEqualTo(2);
-        assertThat(response.bathroom_quantity()).isEqualTo(1);
-        assertThat(response.size()).isEqualTo("80");
+        assertThat(response.size()).isEqualTo(240.0);
         assertThat(response.description()).isNotNull();
         assertThat(response.created_at()).isNotNull();
     }
@@ -139,6 +131,24 @@ public class DemAmsPropertyTests {
     }
 
     @Test
+    void shouldReturnAPageOfProperties() {
+        EntityExchangeResult<String> result = clientWithBasicAuth("landlord", "word123")
+                .get()
+                .uri("/api/properties?page=0&size=1")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class)
+                .returnResult();
+
+        DocumentContext documentContext = JsonPath.parse(result.getResponseBody());
+        int page = documentContext.read("$.page.size");
+        assertThat(page).isEqualTo(1);
+
+        JSONArray ids = documentContext.read("$._embedded.propertyResponseList[*].id");
+        assertThat(ids).containsExactlyInAnyOrder(60);
+    }
+
+    @Test
     void shouldReturnASortedPageOfPropertiesSortedByPropertyValue() {
         EntityExchangeResult<String> result = clientWithBasicAuth("tenant", "pass123")
                 .get()
@@ -175,7 +185,7 @@ public class DemAmsPropertyTests {
         assertThat(read.size()).isEqualTo(1);
 
         String name = documentContext.read("$._embedded.propertyResponseList[0].name");
-        assertThat(name).isEqualTo("Lynville Apartment Unit No. 1");
+        assertThat(name).isEqualTo("Lynville Apartments");
     }
 
     @Test
@@ -203,7 +213,7 @@ public class DemAmsPropertyTests {
     void shouldCreateNewProperty() {
         PropertyRequest savedProperty = new PropertyRequest(
                 "Maxmini Apartment", "Apartments", 9900.00, BillingType.MONTHLY,
-                2, 1, "60 sqm", "A studio apartment in Manila."
+                60.0, "A studio apartment in Manila."
         );
 
         EntityExchangeResult<PropertyResponse> result = clientWithBasicAuth("landlord", "word123")
@@ -221,9 +231,7 @@ public class DemAmsPropertyTests {
         assertThat(requestedProperty.property_type()).isEqualTo("Apartments");
         assertThat(requestedProperty.property_value()).isEqualTo(9900.00);
         assertThat(requestedProperty.billing_type()).isEqualTo(BillingType.MONTHLY);
-        assertThat(requestedProperty.bedroom_quantity()).isEqualTo(2);
-        assertThat(requestedProperty.bathroom_quantity()).isEqualTo(1);
-        assertThat(requestedProperty.size()).isEqualTo("60 sqm");
+        assertThat(requestedProperty.size()).isEqualTo(60);
         assertThat(requestedProperty.description()).isNotNull();
         assertThat(requestedProperty.created_at()).isNotNull();
     }
@@ -233,7 +241,7 @@ public class DemAmsPropertyTests {
     void shouldUpdateExistingProperty() {
         PropertyRequest savedProperty = new PropertyRequest(
                 "Sorter Family Apartment Unit 1", "Apartments", 4750.00, BillingType.MONTHLY,
-                2, 1, "80", "Apartment in Santa Cruz."
+                80.0, "Apartment in Santa Cruz."
         );
 
         EntityExchangeResult<PropertyResponse> result = clientWithBasicAuth("landlord", "word123")
@@ -251,9 +259,7 @@ public class DemAmsPropertyTests {
         assertThat(requestedProperty.property_type()).isEqualTo("Apartments");
         assertThat(requestedProperty.property_value()).isEqualTo(4750.00);
         assertThat(requestedProperty.billing_type()).isEqualTo(BillingType.MONTHLY);
-        assertThat(requestedProperty.bedroom_quantity()).isEqualTo(2);
-        assertThat(requestedProperty.bathroom_quantity()).isEqualTo(1);
-        assertThat(requestedProperty.size()).isEqualTo("80");
+        assertThat(requestedProperty.size()).isEqualTo(80.0);
         assertThat(requestedProperty.description()).isNotNull();
         assertThat(requestedProperty.created_at()).isNotNull();
         assertThat(requestedProperty.updated_at()).isNotNull();
@@ -263,7 +269,7 @@ public class DemAmsPropertyTests {
     void shouldNotAllowTenantToUpdateProperty() {
         PropertyRequest savedProperty = new PropertyRequest(
                 "Sorter Family Apartment Unit 1", "Apartments", 4750.00, BillingType.MONTHLY,
-                2, 1, "80", "Apartment in Santa Cruz."
+                80.0, "Apartment in Santa Cruz."
         );
 
         clientWithBasicAuth("tenant", "pass123")
@@ -278,7 +284,7 @@ public class DemAmsPropertyTests {
     void shouldNotUpdatePropertyTheyDoNotOwn() {
         PropertyRequest savedProperty = new PropertyRequest(
                 "Sorter Family Apartment Unit 1", "Apartments", 4750.00, BillingType.MONTHLY,
-                2, 1, "80", "Apartment in Santa Cruz."
+                80.0, "Apartment in Santa Cruz."
         );
 
         clientWithBasicAuth("lender", "lend123")
@@ -293,7 +299,7 @@ public class DemAmsPropertyTests {
     void shouldNotUpdateNonExistentProperty() {
         PropertyRequest savedProperty = new PropertyRequest(
                 "Sorter Family Apartment Unit 1", "Apartments", 4750.00, BillingType.MONTHLY,
-                2, 1, "80", "Apartment in Santa Cruz."
+                80.0, "Apartment in Santa Cruz."
         );
 
         clientWithBasicAuth("landlord", "word123")

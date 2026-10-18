@@ -1,11 +1,14 @@
 package com.dem_ams.controller;
 
-import com.dem_ams.domain.dto.PaymentResponse;
+import com.dem_ams.domain.dto.LeaseResponse;
 import com.dem_ams.domain.dto.TenantProfileRequest;
 import com.dem_ams.domain.dto.TenantProfileResponse;
 import com.dem_ams.domain.model.CustomUserDetails;
+import com.dem_ams.domain.model.Lease;
 import com.dem_ams.domain.model.TenantProfile;
+import com.dem_ams.domain.model.assembler.LeaseModelAssembler;
 import com.dem_ams.domain.model.assembler.TenantProfileModelAssembler;
+import com.dem_ams.service.LeaseService;
 import com.dem_ams.service.TenantProfileService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,19 +26,27 @@ import org.springframework.web.bind.annotation.*;
 public class TenantProfileController {
 
     private final TenantProfileService tenantProfileService;
-    private final TenantProfileModelAssembler assembler;
+    private final LeaseService leaseService;
+    private final TenantProfileModelAssembler tenantProfileAssembler;
+    private final LeaseModelAssembler leaseAssembler;
 
-    public TenantProfileController(TenantProfileService tenantProfileService, TenantProfileModelAssembler assembler) {
+    public TenantProfileController(
+            TenantProfileService tenantProfileService,
+            LeaseService leaseService,
+            TenantProfileModelAssembler tenantProfileAssembler,
+            LeaseModelAssembler leaseAssembler) {
         this.tenantProfileService = tenantProfileService;
-        this.assembler = assembler;
+        this.leaseService = leaseService;
+        this.tenantProfileAssembler = tenantProfileAssembler;
+        this.leaseAssembler = leaseAssembler;
     }
 
     @GetMapping("/me")
     public ResponseEntity<EntityModel<TenantProfileResponse>> getTenantProfile(
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        TenantProfile profile = tenantProfileService.getTenantProfileByUserId(principal.getId());
-        return ResponseEntity.ok(assembler.toModel(TenantProfileResponse.from(profile)));
+        TenantProfile profile = tenantProfileService.getTenantProfileByUserId(principal.getUser().getId());
+        return ResponseEntity.ok(tenantProfileAssembler.toModel(TenantProfileResponse.from(profile)));
     }
 
     @GetMapping
@@ -51,13 +62,13 @@ public class TenantProfileController {
     }
 
     @GetMapping("/{requestedId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'LANDLORD')")
     public ResponseEntity<EntityModel<TenantProfileResponse>> getTenantProfileById(
             @PathVariable Long requestedId,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
         TenantProfile profile = tenantProfileService.getTenantProfileById(requestedId, principal);
-        return ResponseEntity.ok(assembler.toModel(TenantProfileResponse.from(profile)));
+        return ResponseEntity.ok(tenantProfileAssembler.toModel(TenantProfileResponse.from(profile)));
     }
 
     @PostMapping
@@ -65,8 +76,8 @@ public class TenantProfileController {
             @RequestBody TenantProfileRequest tenantProfileRequest,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        TenantProfile profile = tenantProfileService.createTenantProfile(tenantProfileRequest, principal.getId());
-        return new ResponseEntity<>(assembler.toModel(TenantProfileResponse.from(profile)), HttpStatus.CREATED);
+        TenantProfile profile = tenantProfileService.createTenantProfile(tenantProfileRequest, principal.getUser().getId());
+        return new ResponseEntity<>(tenantProfileAssembler.toModel(TenantProfileResponse.from(profile)), HttpStatus.CREATED);
     }
 
     @PutMapping
@@ -74,17 +85,37 @@ public class TenantProfileController {
             @RequestBody TenantProfileRequest tenantProfileRequest,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        TenantProfile profile = tenantProfileService.getTenantProfileByUserId(principal.getId());
+        TenantProfile profile = tenantProfileService.getTenantProfileByUserId(principal.getUser().getId());
         tenantProfileService.updateTenantProfile(profile, tenantProfileRequest);
-        return ResponseEntity.ok(assembler.toModel(TenantProfileResponse.from(profile)));
+        return ResponseEntity.ok(tenantProfileAssembler.toModel(TenantProfileResponse.from(profile)));
     }
 
     @DeleteMapping
     public ResponseEntity<EntityModel<TenantProfileResponse>> deleteTenantProfile(
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        TenantProfile profile = tenantProfileService.getTenantProfileByUserId(principal.getId());
+        TenantProfile profile = tenantProfileService.getTenantProfileByUserId(principal.getUser().getId());
         tenantProfileService.deleteTenantProfileById(profile.getId());
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/me/leases")
+    public ResponseEntity<PagedModel<EntityModel<LeaseResponse>>> getAllTenantLeases(
+            Pageable pageable,
+            PagedResourcesAssembler<LeaseResponse> pageAssembler,
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        Page<Lease> page = leaseService.getAllLeasesByTenantProfileUserId(principal.getUser().getId(), pageable);
+        Page<LeaseResponse> leaseResponsePage = page.map(LeaseResponse::from);
+        return ResponseEntity.ok(pageAssembler.toModel(leaseResponsePage));
+    }
+
+    @GetMapping("/me/leases/{requestedId}")
+    public ResponseEntity<EntityModel<LeaseResponse>> getTenantLeaseById(
+            @PathVariable Long requestedId,
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        Lease lease = leaseService.getLeaseByIdAndTenantProfileUserId(requestedId, principal.getUser().getId());
+        return ResponseEntity.ok(leaseAssembler.toModel(LeaseResponse.from(lease)));
     }
 }

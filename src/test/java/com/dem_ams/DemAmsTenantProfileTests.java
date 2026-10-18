@@ -1,7 +1,9 @@
 package com.dem_ams;
 
+import com.dem_ams.domain.dto.LeaseResponse;
 import com.dem_ams.domain.dto.TenantProfileRequest;
 import com.dem_ams.domain.dto.TenantProfileResponse;
+import com.dem_ams.domain.dto.UserModelResponse;
 import com.dem_ams.domain.model.TenantProfile;
 import com.dem_ams.domain.model.UserModel;
 import com.jayway.jsonpath.DocumentContext;
@@ -72,7 +74,7 @@ public class DemAmsTenantProfileTests {
         assertThat(requestedTenantProfile.first_name()).isEqualTo("JOHN");
         assertThat(requestedTenantProfile.middle_name()).isEqualTo("MAN");
         assertThat(requestedTenantProfile.last_name()).isEqualTo("TENANT");
-        assertThat(requestedTenantProfile.user_id()).isEqualTo(3);
+        assertThat(requestedTenantProfile.user_id()).isEqualTo(12);
     }
 
     @Test
@@ -88,11 +90,11 @@ public class DemAmsTenantProfileTests {
 
         DocumentContext documentContext = JsonPath.parse(response.getResponseBody());
         int page = documentContext.read("$.page.totalElements");
-        assertThat(page).isEqualTo(2);
+        assertThat(page).isEqualTo(3);
 
         JSONArray ids = documentContext.read("$._embedded.tenantProfileResponseList[*].id");
 
-        assertThat(ids).containsExactlyInAnyOrder(11, 12);
+        assertThat(ids).containsExactlyInAnyOrder(11, 12, 13);
     }
 
     @Test
@@ -118,22 +120,21 @@ public class DemAmsTenantProfileTests {
     @Test
     @DirtiesContext
     void shouldCreateNewTenantProfile() {
-        EntityExchangeResult<UserModel> userModelResult = clientWithBasicAuth("notenant", "pass123")
+        EntityExchangeResult<UserModelResponse> userModelResult = clientWithBasicAuth("notenant", "pass123")
                 .get()
-                .uri("/api/users/5")
+                .uri("/api/users/me")
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(UserModel.class)
+                .expectBody(UserModelResponse.class)
                 .returnResult();
 
-        UserModel userModel = userModelResult.getResponseBody();
-        assertThat(userModel).isNotNull();
-        assertThat(userModel.getUsername()).isEqualTo("notenant");
-        assertThat(userModel.getPassword()).isEqualTo("{noop}pass123");
-        assertThat(userModel.getId()).isEqualTo(5);
+        UserModelResponse userModelResponse = userModelResult.getResponseBody();
+        assertThat(userModelResponse).isNotNull();
+        assertThat(userModelResponse.username()).isEqualTo("notenant");
+        assertThat(userModelResponse.user_id()).isEqualTo(14);
 
         Authentication principal = new UsernamePasswordAuthenticationToken("notenant", "pass123", AuthorityUtils.NO_AUTHORITIES);
-        assertThat(userModel.getUsername()).isEqualTo(principal.getName());
+        assertThat(userModelResponse.username()).isEqualTo(principal.getName());
 
         TenantProfileRequest savedTenantProfile = new TenantProfileRequest("Notenant", "Mister", "Profile");
 
@@ -152,7 +153,7 @@ public class DemAmsTenantProfileTests {
         assertThat(requestedTenantProfile.first_name()).isEqualTo("Notenant");
         assertThat(requestedTenantProfile.middle_name()).isEqualTo("Mister");
         assertThat(requestedTenantProfile.last_name()).isEqualTo("Profile");
-        assertThat(requestedTenantProfile.user_id()).isEqualTo(5);
+        assertThat(requestedTenantProfile.user_id()).isEqualTo(14);
     }
 
     @Test
@@ -176,7 +177,7 @@ public class DemAmsTenantProfileTests {
         assertThat(requestedTenantProfile.first_name()).isEqualTo("MICHAEL");
         assertThat(requestedTenantProfile.middle_name()).isEqualTo("MAN");
         assertThat(requestedTenantProfile.last_name()).isEqualTo("TENANT");
-        assertThat(requestedTenantProfile.user_id()).isEqualTo(3);
+        assertThat(requestedTenantProfile.user_id()).isEqualTo(12);
     }
 
     @Test
