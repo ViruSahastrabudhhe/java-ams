@@ -1,9 +1,9 @@
 package com.dem_ams.domain.model;
 
+import com.dem_ams.constant.ApplicationConstants;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,20 +11,20 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Data
-@NoArgsConstructor
 @Builder
 @AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
 
-    private Long id;
-    private String email;
-    private String username;
-    private String password;
+    private final UserModel user;
     private Set<? extends GrantedAuthority> roles;
+
+    public CustomUserDetails(UserModel user) {
+        this.user = user;
+        this.roles = new HashSet<>();
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -33,19 +33,24 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public @Nullable String getPassword() {
-        return this.password;
+        return user.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return this.username;
+        return user.getUsername();
     }
 
     public boolean isAdmin() {
-        return this.roles.contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        return roles.contains(new SimpleGrantedAuthority(ApplicationConstants.ROLE_ADMIN));
     }
 
     public boolean isLandlord() {
-        return this.roles.contains(new SimpleGrantedAuthority("ROLE_LANDLORD"));
+        return roles.contains(new SimpleGrantedAuthority(ApplicationConstants.ROLE_LANDLORD));
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return user.getEnabled();
     }
 }

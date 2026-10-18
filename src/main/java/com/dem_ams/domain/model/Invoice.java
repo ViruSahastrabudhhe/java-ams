@@ -24,7 +24,6 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Integer invoiceNumber;
     private Double invoiceTotal;
     @Enumerated(EnumType.STRING)
     private InvoiceStatus invoiceStatus;

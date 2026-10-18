@@ -1,13 +1,15 @@
 package com.dem_ams.domain.model;
 
+import com.dem_ams.domain.model.enums.BillingType;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Set;
 
 @Data
 @Entity
@@ -21,13 +23,14 @@ public class Lease {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="propertyId", unique=true, nullable=false, updatable=false)
-    private Property property;
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name="unit_id", unique=true, nullable=false, updatable=false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Unit unit;
 
     @Column(nullable = false)
     private LocalDate startDate;
-    @Column(nullable = false)
     private LocalDate endDate;
 
     @Enumerated(EnumType.STRING)

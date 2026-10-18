@@ -99,8 +99,12 @@
 			<artifactId>jakarta.validation-api</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.flywaydb</groupId>
-			<artifactId>flyway-core</artifactId>
+			<artifactId>flyway-database-postgresql</artifactId>
 		</dependency>
 	</dependencies>
 
@@ -109,20 +113,12 @@
 			<plugin>
 				<groupId>org.flywaydb</groupId>
 				<artifactId>flyway-maven-plugin</artifactId>
-				<version>11.14.1</version>
+				<version>13.10.0</version>
 				<configuration>
-					<url>jdbc:postgresql://localhost:5432/apartments</url>
-					<user>postgres</user>
-					<password>root</password>
-					<cleanDisabled>false</cleanDisabled>
+					<configFiles>
+						<configFile>${project.basedir}/flyway.properties</configFile>
+					</configFiles>
 				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>org.flywaydb</groupId>
-						<artifactId>flyway-database-postgresql</artifactId>
-						<version>13.9.0</version>
-					</dependency>
-				</dependencies>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

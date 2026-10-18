@@ -2,6 +2,7 @@ package com.dem_ams;
 
 import com.dem_ams.domain.dto.LandlordProfileResponse;
 import com.dem_ams.domain.dto.LandlordProfileRequest;
+import com.dem_ams.domain.dto.UserModelResponse;
 import com.dem_ams.domain.model.UserModel;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -51,7 +52,7 @@ public class DemAmsLandlordProfileTests {
         assertThat(requestedLandlordProfile.first_name()).isEqualTo("ALFRED");
         assertThat(requestedLandlordProfile.middle_name()).isEqualTo("LIM");
         assertThat(requestedLandlordProfile.last_name()).isEqualTo("LANDLORD");
-        assertThat(requestedLandlordProfile.user_id()).isEqualTo(2);
+        assertThat(requestedLandlordProfile.user_id()).isEqualTo(11);
     }
 
     @Test
@@ -71,7 +72,7 @@ public class DemAmsLandlordProfileTests {
         assertThat(requestedLandlordProfile.first_name()).isEqualTo("ALFRED");
         assertThat(requestedLandlordProfile.middle_name()).isEqualTo("LIM");
         assertThat(requestedLandlordProfile.last_name()).isEqualTo("LANDLORD");
-        assertThat(requestedLandlordProfile.user_id()).isEqualTo(2);
+        assertThat(requestedLandlordProfile.user_id()).isEqualTo(11);
     }
 
     @Test
@@ -116,22 +117,21 @@ public class DemAmsLandlordProfileTests {
     @Test
     @DirtiesContext
     void shouldCreateNewLandlordProfile() {
-        EntityExchangeResult<UserModel> userModelResult = clientWithBasicAuth("nolandlord", "lord123")
+        EntityExchangeResult<UserModelResponse> userModelResult = clientWithBasicAuth("nolandlord", "lord123")
                 .get()
-                .uri("/api/users/6")
+                .uri("/api/users/me")
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(UserModel.class)
+                .expectBody(UserModelResponse.class)
                 .returnResult();
 
-        UserModel userModel = userModelResult.getResponseBody();
-        assertThat(userModel).isNotNull();
-        assertThat(userModel.getUsername()).isEqualTo("nolandlord");
-        assertThat(userModel.getPassword()).isEqualTo("{noop}lord123");
-        assertThat(userModel.getId()).isEqualTo(6);
+        UserModelResponse userModelResponse = userModelResult.getResponseBody();
+        assertThat(userModelResponse).isNotNull();
+        assertThat(userModelResponse.username()).isEqualTo("nolandlord");
+        assertThat(userModelResponse.user_id()).isEqualTo(15);
 
         Authentication principal = new UsernamePasswordAuthenticationToken("nolandlord", "lord123", AuthorityUtils.NO_AUTHORITIES);
-        assertThat(userModel.getUsername()).isEqualTo(principal.getName());
+        assertThat(userModelResponse.username()).isEqualTo(principal.getName());
 
         LandlordProfileRequest savedLandlordProfile = new LandlordProfileRequest("Nolandlord", "Mister", "Profile");
 
@@ -150,7 +150,7 @@ public class DemAmsLandlordProfileTests {
         assertThat(requestedLandlordProfile.first_name()).isEqualTo("Nolandlord");
         assertThat(requestedLandlordProfile.middle_name()).isEqualTo("Mister");
         assertThat(requestedLandlordProfile.last_name()).isEqualTo("Profile");
-        assertThat(requestedLandlordProfile.user_id()).isEqualTo(6);
+        assertThat(requestedLandlordProfile.user_id()).isEqualTo(15);
     }
 
     @Test
@@ -174,7 +174,7 @@ public class DemAmsLandlordProfileTests {
         assertThat(requestedLandlordProfile.first_name()).isEqualTo("MICHAEL");
         assertThat(requestedLandlordProfile.middle_name()).isEqualTo("MAN");
         assertThat(requestedLandlordProfile.last_name()).isEqualTo("LANDLORD");
-        assertThat(requestedLandlordProfile.user_id()).isEqualTo(2);
+        assertThat(requestedLandlordProfile.user_id()).isEqualTo(11);
     }
 
     @Test

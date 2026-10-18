@@ -42,22 +42,22 @@ public class PaymentService {
         if (principal.isAdmin()) {
             return getPaymentById(id);
         }
-        return getPaymentByIdAndUserId(id, principal.getId());
+        return getPaymentByIdAndUserId(id, principal.getUser().getId());
     }
 
     private Payment getPaymentByIdAndUserId(Long id, Long userId) {
         return paymentRepository.findByIdAndUserId(id, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find payment with id", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find payment with id", String.valueOf(id)));
     }
 
     private Payment getPaymentById(Long id) {
         return paymentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find payment with id", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find payment with id", String.valueOf(id)));
     }
 
     public Payment createPayment(PaymentRequest paymentRequest, Long userId) {
         UserModel userModel = userModelRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find user with id ", userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find user with id ", String.valueOf(userId)));
         Invoice invoice = getInvoiceById(paymentRequest.invoiceId());
         TenantProfile tenantProfile = getTenantProfileById(paymentRequest.tenantProfileId());
 
@@ -75,7 +75,7 @@ public class PaymentService {
         if (principal.isAdmin()) {
             return getAllPayments(pageable);
         }
-        return getPaymentsByUserId(principal.getId(), pageable);
+        return getPaymentsByUserId(principal.getUser().getId(), pageable);
     }
 
     private Page<Payment> getPaymentsByUserId(Long userId, Pageable pageable) {
@@ -119,11 +119,11 @@ public class PaymentService {
 
     private Invoice getInvoiceById(Long id) {
         return invoiceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find invoice with id ", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find invoice with id ", String.valueOf(id)));
     }
 
     private TenantProfile getTenantProfileById(Long id) {
         return tenantProfileRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find tenant profile with id ", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find tenant profile with id ", String.valueOf(id)));
     }
 }

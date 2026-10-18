@@ -1,18 +1,26 @@
 package com.dem_ams.config;
 
+import com.dem_ams.constant.ApplicationConstants;
 import com.dem_ams.domain.exception.ResourceNotFoundException;
 import com.dem_ams.domain.model.*;
+import com.dem_ams.domain.model.enums.BillingType;
+import com.dem_ams.domain.model.enums.UnitStatus;
+import com.dem_ams.domain.model.enums.UnitType;
 import com.dem_ams.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Component
 public class DataSeeder implements CommandLineRunner {
+
+    private static final Logger logger = Logger.getLogger(DataSeeder.class.getName());
 
     private final UserModelRepository userModelRepository;
     private final RoleRepository roleRepository;
@@ -23,20 +31,20 @@ public class DataSeeder implements CommandLineRunner {
     private final LandlordProfileRepository landlordProfileRepository;
     private final PaymentRepository paymentRepository;
     private final PropertyRepository propertyRepository;
-    private final PropertyDetailRepository propertyDetailRepository;
+    private final UnitRepository unitRepository;
+    private final ResidentialUnitRepository residentialUnitRepository;
     private final LeaseRepository leaseRepository;
 
-    private final String[] permissionNames = {
-            "payments:create", "payments:update", "payments:read", "payments:delete",
-            "properties:create", "properties:update", "properties:read", "properties:delete",
-    };
+    private final String[] permissionNames = ApplicationConstants.ALL_PERMISSIONS.toArray(String[]::new);
     private Map<String, UserModel> userModels = new HashMap<>();
+    private Map<String, Role> roles = new HashMap<>();
     private List<TenantProfile> tenantProfiles;
     private List<LandlordProfile> landlordProfiles;
     private List<Invoice> invoices;
-    private List<PropertyDetail> propertyDetails;
     private List<Property> properties;
     private List<Lease> leases;
+    private List<Unit> units;
+    private List<ResidentialUnit> residentialUnits;
 
     public DataSeeder(
             UserModelRepository userModelRepository,
@@ -47,10 +55,10 @@ public class DataSeeder implements CommandLineRunner {
             InvoiceRepository invoiceRepository,
             PaymentRepository paymentRepository,
             PropertyRepository propertyRepository,
-            PropertyDetailRepository propertyDetailRepository,
+            UnitRepository unitRepository,
+            ResidentialUnitRepository residentialUnitRepository,
             LeaseRepository leaseRepository,
-            PasswordEncoder passwordEncoder
-    ) {
+            PasswordEncoder passwordEncoder) {
         this.userModelRepository = userModelRepository;
         this.roleRepository = roleRepository;
         this.tenantProfileRepository = tenantProfileRepository;
@@ -58,13 +66,15 @@ public class DataSeeder implements CommandLineRunner {
         this.invoiceRepository = invoiceRepository;
         this.paymentRepository = paymentRepository;
         this.propertyRepository = propertyRepository;
-        this.propertyDetailRepository = propertyDetailRepository;
+        this.unitRepository = unitRepository;
+        this.residentialUnitRepository = residentialUnitRepository;
         this.leaseRepository = leaseRepository;
         this.landlordProfileRepository = landlordProfileRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
+    @Transactional
     public void run(String... args) throws Exception {
         if (permissionRepository.count() > 0
                 || userModelRepository.existsByUsername("admin")
@@ -74,9 +84,9 @@ public class DataSeeder implements CommandLineRunner {
                 || invoiceRepository.count() > 0
                 || paymentRepository.count() > 0
                 || propertyRepository.count() > 0
-                || propertyDetailRepository.count() > 0
-                || leaseRepository.count() > 0
-        ) {
+                || unitRepository.count() > 0
+                || residentialUnitRepository.count() > 0
+                || leaseRepository.count() > 0) {
             return;
         }
         seedPermissions();
@@ -86,7 +96,8 @@ public class DataSeeder implements CommandLineRunner {
         seedLandlordUserAccounts();
         seedLandlordProfiles();
         seedProperties();
-        seedPropertyDetails();
+        seedUnits();
+        seedResidentialUnits();
         seedLeases();
         seedTenantProfiles();
         seedInvoices();
@@ -112,6 +123,8 @@ public class DataSeeder implements CommandLineRunner {
 
         roleRepository.save(tenant);
         roleRepository.save(landlord);
+        roles.put("tenant", tenant);
+        roles.put("landlord", landlord);
     }
 
     private void seedAdminRoleAndUser() {
@@ -149,7 +162,7 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedTenantUserAccounts() {
-        Role tenantRole = roleRepository.findById(2L).orElseThrow(() -> new ResourceNotFoundException("Could not find role with id", 2L));
+        Role tenantRole = roles.get("tenant");
 
         Map<String, UserModel> tenantAccounts = new HashMap<>();
         tenantAccounts.put("tenant", createUserHelper("tenant@example.com", "tenant", "pass123", Set.of(tenantRole)));
@@ -159,7 +172,7 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedLandlordUserAccounts() {
-        Role landlordRole = roleRepository.findById(3L).orElseThrow(() -> new ResourceNotFoundException("Could not find role with id", 3L));
+        Role landlordRole = roles.get("landlord");
 
         Map<String, UserModel> landlordAccounts = new HashMap<>();
         landlordAccounts.put("landlord", createUserHelper("landlord@example.com", "landlord", "land123", Set.of(landlordRole)));
@@ -169,8 +182,8 @@ public class DataSeeder implements CommandLineRunner {
 
     private void seedTenantProfiles() {
         tenantProfiles = List.of(
-                createTenantProfileHelper("JOHN", "MAN", "TENANT", userModels.get("tenant"), Set.of(leases.get(0))),
-                createTenantProfileHelper("JANE", "WOMAN", "RENTER", userModels.get("renter"), Set.of(leases.get(1)))
+                createTenantProfileHelper("JOHN", "MAN", "TENANT", userModels.get("tenant"), Set.of(leases.get(0)), "09828287272"),
+                createTenantProfileHelper("JANE", "WOMAN", "RENTER", userModels.get("renter"), Set.of(leases.get(1)), "09773332121")
         );
     }
 
@@ -188,56 +201,46 @@ public class DataSeeder implements CommandLineRunner {
 
     private void seedLandlordProfiles() {
         landlordProfiles = List.of(
-                createLandlordProfileHelper("ALFRED", "LIM", "LANDLORD", userModels.get("landlord")),
-                createLandlordProfileHelper("NOLANDLORD", "STILL", "PROFILE", userModels.get("noprofile"))
+                createLandlordProfileHelper("ALFRED", "LIM", "LANDLORD", userModels.get("landlord"), "09992221212"),
+                createLandlordProfileHelper("NOLANDLORD", "STILL", "PROFILE", userModels.get("noprofile"),"09331214545")
         );
     }
 
     private void seedProperties() {
         properties = List.of(
-            createPropertyHelper(landlordProfiles.get(0)),
-            createPropertyHelper(landlordProfiles.get(1)),
-            createPropertyHelper(landlordProfiles.get(0))
+            createPropertyHelper(landlordProfiles.get(0), "Laguna Apartment", "Apartments",
+                    4500.00, BillingType.MONTHLY, 80.0, "Apartment in Laguna."),
+            createPropertyHelper(landlordProfiles.get(1), "Lynville Apartment", "Apartments",
+                    5500.00, BillingType.MONTHLY, 120.0, "Diamond Apartment in Lynville."),
+            createPropertyHelper(landlordProfiles.get(0), "TeraVille Luxury Apartment", "Apartments",
+                    6500.00, BillingType.MONTHLY, 160.0, "Luxury Apartment Unit in TeraVille")
         );
     }
 
-    private void seedPropertyDetails() {
-        propertyDetails = List.of(
-                createPropertyDetailHelper(
-                        "Laguna Apartment",
-                        "Apartments",
-                        4500.00,
-                        BillingType.MONTHLY,
-                        2, 1, "80 sqm", "Apartment in Laguna.",
-                        properties.get(0)
-                ),
-                createPropertyDetailHelper(
-                        "Lynville Apartment",
-                        "Apartments",
-                        5500.00,
-                        BillingType.MONTHLY,
-                        3, 1, "120 sqm", "Diamond Apartment in Lynville.",
-                        properties.get(1)
-                ),
-                createPropertyDetailHelper(
-                        "TeraVille Luxury Apartment",
-                        "Apartments",
-                        6500.00,
-                        BillingType.MONTHLY,
-                        3, 2, "160 sqm", "Luxury Apartment Unit in TeraVille",
-                        properties.get(2)
-                )
+    private void seedUnits() {
+        units = List.of(
+                createUnitHelper(properties.get(0), UnitType.RESIDENTIAL, 25.0, UnitStatus.OCCUPIED),
+                createUnitHelper(properties.get(0), UnitType.RESIDENTIAL, 25.0, UnitStatus.OCCUPIED),
+                createUnitHelper(properties.get(1), UnitType.RESIDENTIAL, 25.0, UnitStatus.OCCUPIED)
+        );
+    }
+
+    private void seedResidentialUnits() {
+        residentialUnits = List.of(
+                createResidentialUnitHelper(units.get(0), "1A", 1, 2, 1),
+                createResidentialUnitHelper(units.get(1), "1B", 1, 2, 1),
+                createResidentialUnitHelper(units.get(2), "1C", 1, 2, 1)
         );
     }
 
     private void seedLeases() {
         leases = List.of(
                 createLeaseHelper(
-                        properties.get(0), LocalDate.of(2026, 6, 1), LocalDate.of(2026, 6, 1),
-                        propertyDetails.get(0).getBillingType(), propertyDetails.get(0).getPropertyValue(), 4500.00, Lease.LeaseStatus.DRAFT),
+                        units.get(0), LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 1),
+                        units.get(0).getProperty().getBillingType(), units.get(0).getProperty().getPropertyValue(), 4500.00, Lease.LeaseStatus.DRAFT),
                 createLeaseHelper(
-                        properties.get(1), LocalDate.of(2026, 6, 1), LocalDate.of(2026, 6, 1),
-                        propertyDetails.get(1).getBillingType(), propertyDetails.get(1).getPropertyValue(), 5500.00, Lease.LeaseStatus.DRAFT)
+                        units.get(1), LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 1),
+                        units.get(1).getProperty().getBillingType(), units.get(1).getProperty().getPropertyValue(), 5500.00, Lease.LeaseStatus.DRAFT)
         );
     }
 
@@ -254,13 +257,14 @@ public class DataSeeder implements CommandLineRunner {
 
     private TenantProfile createTenantProfileHelper(
             String firstName, String middleName, String lastName, UserModel user,
-            Set<Lease> leases
+            Set<Lease> leases, String phoneNumber
     ) {
         TenantProfile tenantProfile = new TenantProfile();
         tenantProfile.setFirstName(firstName);
         tenantProfile.setMiddleName(middleName);
         tenantProfile.setLastName(lastName);
         tenantProfile.setUser(user);
+        tenantProfile.setPhoneNumber(phoneNumber);
         tenantProfile.setLeases(leases);
         return tenantProfileRepository.saveAndFlush(tenantProfile);
     }
@@ -270,7 +274,6 @@ public class DataSeeder implements CommandLineRunner {
             LocalDate dueDate, UserModel user, TenantProfile tenantProfile
     ) {
         Invoice invoice = new Invoice();
-        invoice.setInvoiceNumber(invoiceNumber);
         invoice.setInvoiceTotal(invoiceTotal);
         invoice.setInvoiceStatus(invoiceStatus);
         invoice.setDueDate(dueDate);
@@ -293,48 +296,61 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private LandlordProfile createLandlordProfileHelper(
-            String firstName, String middleName, String lastName, UserModel user
+            String firstName, String middleName, String lastName, UserModel user, String phoneNumber
     ) {
         LandlordProfile landlordProfile = new LandlordProfile();
         landlordProfile.setFirstName(firstName);
         landlordProfile.setMiddleName(middleName);
         landlordProfile.setLastName(lastName);
+        landlordProfile.setPhoneNumber(phoneNumber);
         landlordProfile.setUser(user);
         return landlordProfileRepository.saveAndFlush(landlordProfile);
     }
 
-    private PropertyDetail createPropertyDetailHelper(
-            String name, String propertyType, Double propertyValue, BillingType billingType,
-            Integer bedroomQuantity, Integer bathroomQuantity, String size, String description,
-            Property property
-    ) {
-        PropertyDetail propertyDetail = new PropertyDetail();
-        propertyDetail.setName(name);
-        propertyDetail.setPropertyType(propertyType);
-        propertyDetail.setPropertyValue(propertyValue);
-        propertyDetail.setBillingType(billingType);
-        propertyDetail.setBedroomQuantity(bedroomQuantity);
-        propertyDetail.setBathroomQuantity(bathroomQuantity);
-        propertyDetail.setSize(size);
-        propertyDetail.setDescription(description);
-        propertyDetail.setProperty(property);
-        return propertyDetailRepository.saveAndFlush(propertyDetail);
-    }
-
     private Property createPropertyHelper(
-            LandlordProfile landlordProfile
+            LandlordProfile landlordProfile, String name, String propertyType, Double propertyValue,
+            BillingType billingType, Double size, String description
     ) {
         Property property = new Property();
         property.setLandlordProfile(landlordProfile);
+        property.setName(name);
+        property.setPropertyType(propertyType);
+        property.setPropertyValue(propertyValue);
+        property.setBillingType(billingType);
+        property.setSize(size);
+        property.setDescription(description);
         return propertyRepository.saveAndFlush(property);
     }
 
+    private Unit createUnitHelper(
+            Property property, UnitType unitType, Double squareMeters, UnitStatus status
+    ) {
+        Unit unit = new Unit();
+        unit.setProperty(property);
+        unit.setUnitType(unitType);
+        unit.setSquareMeters(squareMeters);
+        unit.setStatus(status);
+        return unitRepository.saveAndFlush(unit);
+    }
+
+    private ResidentialUnit createResidentialUnitHelper(
+            Unit unit, String unitNumber, Integer floor, Integer bedroomQuantity, Integer bathroomQuantity
+    ) {
+        ResidentialUnit residentialUnit = new ResidentialUnit();
+        residentialUnit.setUnit(unit);
+        residentialUnit.setUnitNumber(unitNumber);
+        residentialUnit.setFloor(floor);
+        residentialUnit.setBedroomQuantity(bedroomQuantity);
+        residentialUnit.setBathroomQuantity(bathroomQuantity);
+        return residentialUnitRepository.saveAndFlush(residentialUnit);
+    }
+
     private Lease createLeaseHelper(
-            Property property, LocalDate startDate, LocalDate endDate,
+            Unit unit, LocalDate startDate, LocalDate endDate,
             BillingType billingType, Double rent, Double deposit, Lease.LeaseStatus status
     ) {
         Lease lease = new Lease();
-        lease.setProperty(property);
+        lease.setUnit(unit);
         lease.setStartDate(startDate);
         lease.setEndDate(endDate);
         lease.setBillingType(billingType);

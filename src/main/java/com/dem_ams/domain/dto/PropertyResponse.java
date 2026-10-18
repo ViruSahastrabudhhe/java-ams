@@ -1,6 +1,6 @@
 package com.dem_ams.domain.dto;
 
-import com.dem_ams.domain.model.BillingType;
+import com.dem_ams.domain.model.enums.BillingType;
 import com.dem_ams.domain.model.Property;
 import jakarta.annotation.Nullable;
 
@@ -14,9 +14,7 @@ public record PropertyResponse(
         String property_type,
         Double property_value,
         BillingType billing_type,
-        Integer bedroom_quantity,
-        Integer bathroom_quantity,
-        String size,
+        Double size,
         String description,
         LocalDateTime created_at,
         @Nullable LocalDateTime updated_at,
@@ -27,17 +25,15 @@ public record PropertyResponse(
         return new PropertyResponse(
                 property.getId(),
                 property.getLandlordProfile().getId(),
-                property.getPropertyDetail().getName(),
-                property.getPropertyDetail().getPropertyType(),
-                property.getPropertyDetail().getPropertyValue(),
-                property.getPropertyDetail().getBillingType(),
-                property.getPropertyDetail().getBedroomQuantity(),
-                property.getPropertyDetail().getBathroomQuantity(),
-                property.getPropertyDetail().getSize(),
-                property.getPropertyDetail().getDescription(),
-                property.getPropertyDetail().getCreatedAt(),
-                property.getPropertyDetail().getUpdatedAt(),
-                property.getPropertyDetail().getDeletedAt()
+                property.getName(),
+                property.getPropertyType(),
+                property.getPropertyValue(),
+                property.getBillingType(),
+                property.getSize(),
+                property.getDescription(),
+                property.getCreatedAt(),
+                property.getUpdatedAt(),
+                property.getDeletedAt()
         );
     }
 }

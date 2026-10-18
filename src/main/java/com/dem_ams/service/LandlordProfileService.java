@@ -37,21 +37,21 @@ public class LandlordProfileService {
 
     public LandlordProfile getLandlordProfileByUserId(Long userId) {
         return landlordProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find landlord profile with userId", userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find landlord profile with userId", String.valueOf(userId)));
     }
 
     public LandlordProfile getLandlordProfileById(Long id, CustomUserDetails principal) {
         if (principal.isAdmin()) {
             return landlordProfileRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("Could not find landlord profile with id", id));
+                    .orElseThrow(() -> new ResourceNotFoundException("Could not find landlord profile with id", String.valueOf(id)));
         }
 
-        throw new ResourceNotFoundException("Could not find tenant profile with id", id);
+        throw new ResourceNotFoundException("Could not find tenant profile with id", String.valueOf(id));
     }
 
     public LandlordProfile createLandlordProfile(LandlordProfileRequest landlordProfileRequest, Long userId) {
         UserModel userModel = userModelRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find user with id", userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find user with id", String.valueOf(userId)));
 
         LandlordProfile landlordProfileToCreate = new LandlordProfile();
         landlordProfileToCreate.setFirstName(landlordProfileRequest.firstName());

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -20,10 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 class DemAmsApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
-
 	@Autowired
 	RestTestClient client;
 
@@ -37,7 +34,8 @@ class DemAmsApplicationTests {
 	void shouldReturnExistingUser() {
 		EntityExchangeResult<UserModel> response = clientWithBasicAuth("admin", "password")
 				.get()
-				.uri("/api/users/1")
+				.uri("/api/users/10")
+				.accept(MediaTypes.HAL_JSON)
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(UserModel.class)
@@ -47,7 +45,7 @@ class DemAmsApplicationTests {
 		assertThat(userModel).isNotNull();
 		assertThat(userModel.getUsername()).isEqualTo("admin");
 		assertThat(userModel.getPassword()).isEqualTo("{noop}password");
-		assertThat(userModel.getId()).isEqualTo(1);
+		assertThat(userModel.getId()).isEqualTo(10);
 
 		Authentication principal = new UsernamePasswordAuthenticationToken("admin", "password", AuthorityUtils.NO_AUTHORITIES);
 		assertThat(userModel.getUsername()).isEqualTo(principal.getName());
@@ -58,6 +56,7 @@ class DemAmsApplicationTests {
 		clientWithBasicAuth("admin", "password")
 				.get()
 				.uri("/api/users/888/info")
+				.accept(MediaTypes.HAL_JSON)
 				.exchange()
 				.expectStatus().isNotFound();
 	}
@@ -66,7 +65,8 @@ class DemAmsApplicationTests {
 	void shouldNotAllowAccessToUserTheyDoNotOwn() {
 		clientWithBasicAuth("tenant", "pass123")
 				.get()
-				.uri("/api/users/4/info")
+				.uri("/api/users/4")
+				.accept(MediaTypes.HAL_JSON)
 				.exchange()
 				.expectStatus().isForbidden();
 	}
@@ -76,6 +76,7 @@ class DemAmsApplicationTests {
 		clientWithBasicAuth("admin", "password")
 				.get()
 				.uri("/api/public")
+				.accept(MediaTypes.HAL_JSON)
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class);
@@ -91,7 +92,7 @@ class DemAmsApplicationTests {
 
 		clientWithBasicAuth("admin", "password")
 				.put()
-				.uri("/api/users/1")
+				.uri("/api/users/10")
 				.body(updatedUserModel)
 				.exchange()
 				.expectStatus().isNoContent()
@@ -100,14 +101,15 @@ class DemAmsApplicationTests {
 
 		EntityExchangeResult<UserModel> response = clientWithBasicAuth("jejomar", "password")
 				.get()
-				.uri("/api/users/1")
+				.uri("/api/users/10")
+				.accept(MediaTypes.HAL_JSON)
 				.exchange()
 				.expectBody(UserModel.class)
 				.returnResult();
 
 		UserModel getUserModel = response.getResponseBody();
 		assertThat(getUserModel).isNotNull();
-		assertThat(getUserModel.getId()).isEqualTo(1);
+		assertThat(getUserModel.getId()).isEqualTo(10);
 		assertThat(getUserModel.getEmail()).isEqualTo("jejomar@example.com");
 		assertThat(getUserModel.getUsername()).isEqualTo("jejomar");
 		assertThat(getUserModel.getPassword()).isEqualTo("{noop}password");

@@ -36,7 +36,7 @@ public class LandlordProfileController {
     public ResponseEntity<EntityModel<LandlordProfileResponse>> getLandlordProfile(
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        LandlordProfile landlordProfile = landlordProfileService.getLandlordProfileByUserId(principal.getId());
+        LandlordProfile landlordProfile = landlordProfileService.getLandlordProfileByUserId(principal.getUser().getId());
         return ResponseEntity.ok(assembler.toModel(LandlordProfileResponse.from(landlordProfile)));
     }
 
@@ -69,7 +69,7 @@ public class LandlordProfileController {
             @RequestBody LandlordProfileRequest landlordProfileRequest,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        LandlordProfile profile = landlordProfileService.createLandlordProfile(landlordProfileRequest, principal.getId());
+        LandlordProfile profile = landlordProfileService.createLandlordProfile(landlordProfileRequest, principal.getUser().getId());
         return new ResponseEntity<>(assembler.toModel(LandlordProfileResponse.from(profile)), HttpStatus.CREATED);
     }
 
@@ -79,7 +79,7 @@ public class LandlordProfileController {
             @RequestBody LandlordProfileRequest landlordProfileRequest,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        LandlordProfile profile = landlordProfileService.getLandlordProfileByUserId(principal.getId());
+        LandlordProfile profile = landlordProfileService.getLandlordProfileByUserId(principal.getUser().getId());
         landlordProfileService.updateLandlordProfile(profile, landlordProfileRequest);
         return ResponseEntity.ok(assembler.toModel(LandlordProfileResponse.from(profile)));
     }
@@ -89,7 +89,7 @@ public class LandlordProfileController {
     public ResponseEntity<EntityModel<LandlordProfileResponse>> deleteLandlordProfile(
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        LandlordProfile profile = landlordProfileService.getLandlordProfileByUserId(principal.getId());
+        LandlordProfile profile = landlordProfileService.getLandlordProfileByUserId(principal.getUser().getId());
         landlordProfileService.deleteLandlordProfileById(profile.getId());
         return ResponseEntity.noContent().build();
     }

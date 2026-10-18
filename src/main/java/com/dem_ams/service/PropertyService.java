@@ -1,14 +1,11 @@
 package com.dem_ams.service;
 
-import com.dem_ams.controller.PropertyController;
 import com.dem_ams.domain.dto.PropertyRequest;
 import com.dem_ams.domain.exception.ResourceNotFoundException;
 import com.dem_ams.domain.model.CustomUserDetails;
 import com.dem_ams.domain.model.LandlordProfile;
 import com.dem_ams.domain.model.Property;
-import com.dem_ams.domain.model.PropertyDetail;
 import com.dem_ams.repository.LandlordProfileRepository;
-import com.dem_ams.repository.PropertyDetailRepository;
 import com.dem_ams.repository.PropertyRepository;
 import com.dem_ams.repository.UserModelRepository;
 import org.springframework.data.domain.Page;
@@ -17,7 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -35,40 +31,41 @@ public class PropertyService {
             "nameAsc", "name: ASC",
             "nameDesc", "name: DESC"
     );
-    private final PropertyDetailRepository propertyDetailRepository;
 
     public PropertyService(
             PropertyRepository propertyRepository,
             UserModelRepository userModelRepository,
-            LandlordProfileRepository landlordProfileRepository,
-            PropertyDetailRepository propertyDetailRepository) {
+            LandlordProfileRepository landlordProfileRepository) {
         this.propertyRepository = propertyRepository;
         this.userModelRepository = userModelRepository;
         this.landlordProfileRepository = landlordProfileRepository;
-        this.propertyDetailRepository = propertyDetailRepository;
     }
 
     public Property getPropertyForUser(Long id, CustomUserDetails principal) {
         if (principal.isLandlord()) {
-            return getPropertyByIdAndLandlordProfileUserId(id, principal.getId());
+            return getPropertyByIdAndLandlordProfileUserId(id, principal.getUser().getId());
         }
 
         return getPropertyById(id);
     }
 
-    private Property getPropertyByIdAndLandlordProfileUserId(Long id, Long userId) {
+    public Property getPropertyByIdAndLandlordProfileUserId(Long id, Long userId) {
         return propertyRepository.findByIdAndLandlordProfileUserId(id, userId)
-            .orElseThrow(() -> new ResourceNotFoundException("Could not find property with id", id));
+            .orElseThrow(() -> new ResourceNotFoundException("Could not find property with id", String.valueOf(id)));
     }
 
     private Property getPropertyById(Long id) {
         return propertyRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find property with id", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find property with id", String.valueOf(id)));
     }
 
     public Page<Property> getPropertiesForUser(Pageable pageable, CustomUserDetails principal) {
+        // for guest users who only wish to browse properties
+        if (principal == null) {
+            return getAllProperties(pageable);
+        }
         if (principal.isLandlord()) {
-            return getPropertiesByLandlordProfileUserId(principal.getId(), pageable);
+            return getPropertiesByLandlordProfileUserId(principal.getUser().getId(), pageable);
         }
 
         return getAllProperties(pageable);
@@ -80,7 +77,7 @@ public class PropertyService {
                 PageRequest.of(
                     pageable.getPageNumber(),
                     pageable.getPageSize(),
-                    toSort(pageable)
+                    pageable.getSortOr(Sort.by(Sort.Direction.ASC, "createdAt"))
                 ));
     }
 
@@ -89,7 +86,7 @@ public class PropertyService {
                 PageRequest.of(
                     pageable.getPageNumber(),
                     pageable.getPageSize(),
-                    toSort(pageable)
+                    pageable.getSortOr(Sort.by(Sort.Direction.ASC, "createdAt"))
                 ));
     }
 
@@ -98,62 +95,53 @@ public class PropertyService {
 
         Property propertyToCreate = new Property();
         propertyToCreate.setLandlordProfile(landlordProfile);
-
-        PropertyDetail propertyDetailToCreate = new PropertyDetail();
-        propertyDetailToCreate.setName(propertyRequest.name());
-        propertyDetailToCreate.setPropertyType(propertyRequest.propertyType());
-        propertyDetailToCreate.setPropertyValue(propertyRequest.propertyValue());
-        propertyDetailToCreate.setBillingType(propertyRequest.billingType());
-        propertyDetailToCreate.setBedroomQuantity(propertyRequest.bedroomQuantity());
-        propertyDetailToCreate.setBathroomQuantity(propertyRequest.bathroomQuantity());
-        propertyDetailToCreate.setSize(propertyRequest.size());
-        propertyDetailToCreate.setDescription(propertyRequest.description());
-        propertyDetailToCreate.setProperty(propertyToCreate);
-        propertyToCreate.setPropertyDetail(propertyDetailToCreate);
-
+        propertyToCreate.setName(propertyRequest.name());
+        propertyToCreate.setPropertyType(propertyRequest.propertyType());
+        propertyToCreate.setPropertyValue(propertyRequest.propertyValue());
+        propertyToCreate.setBillingType(propertyRequest.billingType());
+        propertyToCreate.setSize(propertyRequest.size());
+        propertyToCreate.setDescription(propertyRequest.description());
         return propertyRepository.saveAndFlush(propertyToCreate);
     }
 
     public void updateProperty(Property propertyToUpdate, PropertyRequest propertyRequest) {
-        propertyToUpdate.getPropertyDetail().setName(propertyRequest.name());
-        propertyToUpdate.getPropertyDetail().setPropertyType(propertyRequest.propertyType());
-        propertyToUpdate.getPropertyDetail().setPropertyValue(propertyRequest.propertyValue());
-        propertyToUpdate.getPropertyDetail().setBillingType(propertyRequest.billingType());
-        propertyToUpdate.getPropertyDetail().setBedroomQuantity(propertyRequest.bedroomQuantity());
-        propertyToUpdate.getPropertyDetail().setBathroomQuantity(propertyRequest.bathroomQuantity());
-        propertyToUpdate.getPropertyDetail().setDescription(propertyRequest.description());
-        propertyToUpdate.getPropertyDetail().setSize(propertyRequest.size());
+        propertyToUpdate.setName(propertyRequest.name());
+        propertyToUpdate.setPropertyType(propertyRequest.propertyType());
+        propertyToUpdate.setPropertyValue(propertyRequest.propertyValue());
+        propertyToUpdate.setBillingType(propertyRequest.billingType());
+        propertyToUpdate.setDescription(propertyRequest.description());
+        propertyToUpdate.setSize(propertyRequest.size());
         propertyRepository.saveAndFlush(propertyToUpdate);
     }
 
     private LandlordProfile getLandlordProfileByUserId(Long userId) {
         return landlordProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Could not find landlord profile with userId", userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find landlord profile with userId", String.valueOf(userId)));
     }
 
     public void deletePropertyById(Long id) {
         propertyRepository.deleteById(id);
     }
 
-    private static Sort toSort(Pageable pageable) {
-        /*
-            there's probably a better way to do this, but if you want to sort by more shit e.g.
-            billingType, location, price, then this was the only solution i could think of
-            for this shit twin </3
-        */
-        Sort sort;
-        if (pageable.getSort().toString().equals(SORTABLE_FIELDS.get("propertyValueAsc"))) {
-            sort = Sort.by(Sort.Direction.ASC, "propertyDetail.propertyValue");
-        } else if (pageable.getSort().toString().equals(SORTABLE_FIELDS.get("propertyValueDesc"))) {
-            sort = Sort.by(Sort.Direction.DESC, "propertyDetail.propertyValue");
-        } else if (pageable.getSort().toString().equals(SORTABLE_FIELDS.get("nameAsc"))) {
-            sort = Sort.by(Sort.Direction.ASC, "propertyDetail.name");
-        } else if (pageable.getSort().toString().equals(SORTABLE_FIELDS.get("nameDesc"))) {
-            sort = Sort.by(Sort.Direction.DESC, "propertyDetail.name");
-        } else {
-            sort = Sort.by("createdAt").descending();
-        }
-        return sort;
-    }
+    //    private static Sort toSort(Pageable pageable) {
+//        /*
+//            there's probably a better way to do this, but if you want to sort by more shit e.g.
+//            billingType, location, price, then this was the only solution i could think of
+//            for this shit twin </3
+//        */
+//        Sort sort;
+//        if (pageable.getSort().toString().equals(SORTABLE_FIELDS.get("propertyValueAsc"))) {
+//            sort = Sort.by(Sort.Direction.ASC, "propertyDetail.propertyValue");
+//        } else if (pageable.getSort().toString().equals(SORTABLE_FIELDS.get("propertyValueDesc"))) {
+//            sort = Sort.by(Sort.Direction.DESC, "propertyDetail.propertyValue");
+//        } else if (pageable.getSort().toString().equals(SORTABLE_FIELDS.get("nameAsc"))) {
+//            sort = Sort.by(Sort.Direction.ASC, "propertyDetail.name");
+//        } else if (pageable.getSort().toString().equals(SORTABLE_FIELDS.get("nameDesc"))) {
+//            sort = Sort.by(Sort.Direction.DESC, "propertyDetail.name");
+//        } else {
+//            sort = Sort.by("createdAt").descending();
+//        }
+//        return sort;
+//    }
 
 }

@@ -1,6 +1,6 @@
 package com.dem_ams.domain.dto;
 
-import com.dem_ams.domain.model.BillingType;
+import com.dem_ams.domain.model.enums.BillingType;
 
 import java.io.Serializable;
 
@@ -9,9 +9,7 @@ public record PropertyRequest(
         String propertyType,
         Double propertyValue,
         BillingType billingType,
-        Integer bedroomQuantity,
-        Integer bathroomQuantity,
-        String size,
+        Double size,
         String description
 ) implements Serializable {
 }

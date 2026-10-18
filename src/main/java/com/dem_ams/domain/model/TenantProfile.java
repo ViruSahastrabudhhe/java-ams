@@ -2,7 +2,9 @@ package com.dem_ams.domain.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 
@@ -23,14 +25,17 @@ public class TenantProfile {
     private String firstName;
     private String middleName;
     private String lastName;
-
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name="tenantProfileId", referencedColumnName = "id")
-    private Set<Lease> leases;
+    private String phoneNumber;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private UserModel user;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name="tenantProfileId", referencedColumnName = "id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Set<Lease> leases;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -43,5 +48,9 @@ public class TenantProfile {
     @PreUpdate
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public void addLease(Lease lease) {
+        leases.add(lease);
     }
 }
