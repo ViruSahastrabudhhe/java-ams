@@ -57,6 +57,7 @@ public class TenantProfileService {
         tenantProfileToCreate.setFirstName(tenantProfileRequest.firstName());
         tenantProfileToCreate.setMiddleName(tenantProfileRequest.middleName());
         tenantProfileToCreate.setLastName(tenantProfileRequest.lastName());
+        tenantProfileToCreate.setPhoneNumber(tenantProfileRequest.phoneNumber());
         tenantProfileToCreate.setUser(userModel);
         return tenantProfileRepository.saveAndFlush(tenantProfileToCreate);
     }
@@ -65,6 +66,7 @@ public class TenantProfileService {
         tenantProfileToUpdate.setFirstName(tenantProfileRequest.firstName());
         tenantProfileToUpdate.setMiddleName(tenantProfileRequest.middleName());
         tenantProfileToUpdate.setLastName(tenantProfileRequest.lastName());
+        tenantProfileToUpdate.setPhoneNumber(tenantProfileRequest.phoneNumber());
         tenantProfileRepository.saveAndFlush(tenantProfileToUpdate);
     }
 

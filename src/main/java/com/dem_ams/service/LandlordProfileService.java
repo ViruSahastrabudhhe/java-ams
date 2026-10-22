@@ -57,6 +57,7 @@ public class LandlordProfileService {
         landlordProfileToCreate.setFirstName(landlordProfileRequest.firstName());
         landlordProfileToCreate.setMiddleName(landlordProfileRequest.middleName());
         landlordProfileToCreate.setLastName(landlordProfileRequest.lastName());
+        landlordProfileToCreate.setPhoneNumber(landlordProfileRequest.phoneNumber());
         landlordProfileToCreate.setUser(userModel);
         return landlordProfileRepository.saveAndFlush(landlordProfileToCreate);
     }
@@ -65,6 +66,7 @@ public class LandlordProfileService {
         landlordProfileToUpdate.setFirstName(landlordProfileRequest.firstName());
         landlordProfileToUpdate.setMiddleName(landlordProfileRequest.middleName());
         landlordProfileToUpdate.setLastName(landlordProfileRequest.lastName());
+        landlordProfileToUpdate.setPhoneNumber(landlordProfileRequest.phoneNumber());
         landlordProfileRepository.saveAndFlush(landlordProfileToUpdate);
     }
 

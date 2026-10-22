@@ -11,7 +11,8 @@ public class DemAmsApplication {
 
 	/*
 		TODO: Core API
-			- Property & PropertyDetail -> Unit -> Lease -> Tenant
+			- MVP
+			- Property -> Unit -> Lease -> Tenant
 				 							|
 				 							|
  											-> MaintenanceRequest / Complaint
@@ -19,7 +20,7 @@ public class DemAmsApplication {
 			- Database indexing
 			- API versioning
 
-		TODO: Features
+		TODO: Features ordered by priority
 			- Request form validation with Hibernate Validation
 			- Caching with Redis
 			- (2-in-1 deal) Batch processing of scheduled tasks e.g.

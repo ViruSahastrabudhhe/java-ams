@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: "dem_ams"
+  datasource:
+    url: "jdbc:postgresql://localhost:5432/{DB_NAME}"
+    username: "{DB_USERNAME}"
+    password: "{DB_PASSWORD}"
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+    locations:
+      - db/migration
+    url: "jdbc:postgresql://localhost:5432/{DB_NAME}"
+    user: "{DB_USERNAME}"
+    password: "{DB_PASSWORD}"
+    clean-disabled: true

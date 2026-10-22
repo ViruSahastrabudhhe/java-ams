@@ -5,6 +5,7 @@ import java.io.Serializable;
 public record LandlordProfileRequest(
         String firstName,
         String middleName,
-        String lastName
+        String lastName,
+        String phoneNumber
 ) implements Serializable {
 }

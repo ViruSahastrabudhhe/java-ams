@@ -56,17 +56,17 @@ INSERT INTO user_roles (user_id, role_id) VALUES (14, 2);
 INSERT INTO user_roles (user_id, role_id) VALUES (15, 3);
 INSERT INTO user_roles (user_id, role_id) VALUES (16, 3);
 
-INSERT INTO landlord_profiles (id, first_name, middle_name, last_name, user_id)
-VALUES (21, 'ALFRED', 'LIM', 'LANDLORD', 11);
-INSERT INTO landlord_profiles (id, first_name, middle_name, last_name, user_id)
-VALUES (22, 'LENDER', 'MAGNA', 'LAUDE', 16);
+INSERT INTO landlord_profiles (id, first_name, middle_name, last_name, phone_number, user_id)
+VALUES (21, 'ALFRED', 'LIM', 'LANDLORD', '09123456789', 11);
+INSERT INTO landlord_profiles (id, first_name, middle_name, last_name, phone_number, user_id)
+VALUES (22, 'LENDER', 'MAGNA', 'LAUDE', '09112223333', 16);
 
-INSERT INTO tenant_profiles (id, first_name, middle_name, last_name, user_id)
-VALUES (11, 'JOHN', 'MAN', 'TENANT', 12);
-INSERT INTO tenant_profiles (id, first_name, middle_name, last_name, user_id)
-VALUES (12, 'JANE', 'WOMAN', 'RENTER', 13);
-INSERT INTO tenant_profiles (id, first_name, middle_name, last_name, user_id)
-VALUES (13, 'TEN', 'WOW', 'RENT', 17);
+INSERT INTO tenant_profiles (id, first_name, middle_name, last_name, phone_number, user_id)
+VALUES (11, 'JOHN', 'MAN', 'TENANT', '09123456789', 12);
+INSERT INTO tenant_profiles (id, first_name, middle_name, last_name, phone_number, user_id)
+VALUES (12, 'JANE', 'WOMAN', 'RENTER', '09112223333', 13);
+INSERT INTO tenant_profiles (id, first_name, middle_name, last_name, phone_number, user_id)
+VALUES (13, 'TEN', 'WOW', 'RENT', '09223334444', 17);
 
 INSERT INTO properties (id, landlord_profile_id, name, property_type, property_value, size, description, created_at)
 VALUES (60, 21, 'Santa Cruz Apartment', 'Apartments', 4500.00, 240.0, 'Apartment in Santa Cruz.', '2026-07-01T00:37:27.614');
