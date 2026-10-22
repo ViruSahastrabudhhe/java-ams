@@ -1,0 +1,2 @@
+ALTER TABLE units DROP COLUMN IF EXISTS unit_id;
+ALTER TABLE units DROP COLUMN IF EXISTS residential_unit_id;

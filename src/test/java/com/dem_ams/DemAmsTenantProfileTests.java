@@ -55,6 +55,7 @@ public class DemAmsTenantProfileTests {
         assertThat(requestedTenantProfile.first_name()).isEqualTo("JOHN");
         assertThat(requestedTenantProfile.middle_name()).isEqualTo("MAN");
         assertThat(requestedTenantProfile.last_name()).isEqualTo("TENANT");
+        assertThat(requestedTenantProfile.phone_number()).isEqualTo("09123456789");
     }
 
     @Test
@@ -74,6 +75,7 @@ public class DemAmsTenantProfileTests {
         assertThat(requestedTenantProfile.first_name()).isEqualTo("JOHN");
         assertThat(requestedTenantProfile.middle_name()).isEqualTo("MAN");
         assertThat(requestedTenantProfile.last_name()).isEqualTo("TENANT");
+        assertThat(requestedTenantProfile.phone_number()).isEqualTo("09123456789");
         assertThat(requestedTenantProfile.user_id()).isEqualTo(12);
     }
 
@@ -136,7 +138,7 @@ public class DemAmsTenantProfileTests {
         Authentication principal = new UsernamePasswordAuthenticationToken("notenant", "pass123", AuthorityUtils.NO_AUTHORITIES);
         assertThat(userModelResponse.username()).isEqualTo(principal.getName());
 
-        TenantProfileRequest savedTenantProfile = new TenantProfileRequest("Notenant", "Mister", "Profile");
+        TenantProfileRequest savedTenantProfile = new TenantProfileRequest("Notenant", "Mister", "Profile", "09223130494");
 
         EntityExchangeResult<TenantProfileResponse> tenantProfileResult = clientWithBasicAuth("notenant", "pass123")
                 .post()
@@ -153,13 +155,14 @@ public class DemAmsTenantProfileTests {
         assertThat(requestedTenantProfile.first_name()).isEqualTo("Notenant");
         assertThat(requestedTenantProfile.middle_name()).isEqualTo("Mister");
         assertThat(requestedTenantProfile.last_name()).isEqualTo("Profile");
+        assertThat(requestedTenantProfile.phone_number()).isEqualTo("09223130494");
         assertThat(requestedTenantProfile.user_id()).isEqualTo(14);
     }
 
     @Test
     @DirtiesContext
     void shouldUpdateExistingTenantProfile() {
-        TenantProfileRequest savedTenantProfileRequest = new TenantProfileRequest("MICHAEL", "MAN", "TENANT");
+        TenantProfileRequest savedTenantProfileRequest = new TenantProfileRequest("MICHAEL", "MAN", "TENANT", "09882827765");
 
         EntityExchangeResult<TenantProfileResponse> result = clientWithBasicAuth("tenant", "pass123")
                 .put()
@@ -177,6 +180,7 @@ public class DemAmsTenantProfileTests {
         assertThat(requestedTenantProfile.first_name()).isEqualTo("MICHAEL");
         assertThat(requestedTenantProfile.middle_name()).isEqualTo("MAN");
         assertThat(requestedTenantProfile.last_name()).isEqualTo("TENANT");
+        assertThat(requestedTenantProfile.phone_number()).isEqualTo("09882827765");
         assertThat(requestedTenantProfile.user_id()).isEqualTo(12);
     }
 

@@ -133,7 +133,7 @@ public class DemAmsLandlordProfileTests {
         Authentication principal = new UsernamePasswordAuthenticationToken("nolandlord", "lord123", AuthorityUtils.NO_AUTHORITIES);
         assertThat(userModelResponse.username()).isEqualTo(principal.getName());
 
-        LandlordProfileRequest savedLandlordProfile = new LandlordProfileRequest("Nolandlord", "Mister", "Profile");
+        LandlordProfileRequest savedLandlordProfile = new LandlordProfileRequest("Nolandlord", "Mister", "Profile", "09883132222");
 
         EntityExchangeResult<LandlordProfileResponse> landlordProfileResult = clientWithBasicAuth("nolandlord", "lord123")
                 .post()
@@ -156,7 +156,7 @@ public class DemAmsLandlordProfileTests {
     @Test
     @DirtiesContext
     void shouldUpdateExistingLandlordProfile() {
-        LandlordProfileRequest savedLandlordProfileRequest = new LandlordProfileRequest("MICHAEL", "MAN", "LANDLORD");
+        LandlordProfileRequest savedLandlordProfileRequest = new LandlordProfileRequest("MICHAEL", "MAN", "LANDLORD", "09123436677");
 
         EntityExchangeResult<LandlordProfileResponse> result = clientWithBasicAuth("landlord", "word123")
                 .put()
