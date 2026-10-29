@@ -2,6 +2,7 @@ package com.dem_ams.domain.dto;
 
 import com.dem_ams.domain.model.enums.BillingType;
 import com.dem_ams.domain.model.Lease;
+import com.dem_ams.domain.model.enums.LeaseStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,7 +15,7 @@ public record LeaseResponse(
         BillingType billing_type,
         Double rent,
         Double deposit,
-        Lease.LeaseStatus status,
+        LeaseStatus status,
         LocalDateTime created_at,
         LocalDateTime updated_at,
         LocalDateTime deleted_at

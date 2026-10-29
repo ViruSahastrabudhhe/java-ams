@@ -4,6 +4,7 @@ import com.dem_ams.domain.dto.LeaseRequest;
 import com.dem_ams.domain.dto.LeaseResponse;
 import com.dem_ams.domain.model.enums.BillingType;
 import com.dem_ams.domain.model.Lease;
+import com.dem_ams.domain.model.enums.LeaseStatus;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
@@ -150,7 +151,7 @@ public class DemAmsLeaseTests {
         assertThat(response.billing_type()).isEqualTo(BillingType.MONTHLY);
         assertThat(response.rent()).isEqualTo(4500.00);
         assertThat(response.deposit()).isEqualTo(4500.0);
-        assertThat(response.status()).isEqualTo(Lease.LeaseStatus.FINALIZED);
+        assertThat(response.status()).isEqualTo(LeaseStatus.FINALIZED);
     }
 
     @Test
@@ -178,7 +179,7 @@ public class DemAmsLeaseTests {
     void shouldCreateNewLease() {
         LeaseRequest leaseRequest = new LeaseRequest(
                 70L, 11L, LocalDate.of(2027, 4, 1), LocalDate.of(2027, 7, 1),
-                BillingType.MONTHLY, 4500.00, 4500.00, Lease.LeaseStatus.DRAFT
+                BillingType.MONTHLY, 4500.00, 4500.00, LeaseStatus.DRAFT
         );
 
         EntityExchangeResult<LeaseResponse> leaseResponseResult = clientWithBasicAuth("landlord", "word123")
@@ -198,7 +199,7 @@ public class DemAmsLeaseTests {
         assertThat(leaseResponse.billing_type()).isEqualTo(BillingType.MONTHLY);
         assertThat(leaseResponse.rent()).isEqualTo(4500.00);
         assertThat(leaseResponse.deposit()).isEqualTo(4500.00);
-        assertThat(leaseResponse.status()).isEqualTo(Lease.LeaseStatus.DRAFT);
+        assertThat(leaseResponse.status()).isEqualTo(LeaseStatus.DRAFT);
         assertThat(leaseResponse.created_at()).isNotNull();
 
         EntityExchangeResult<String> tenantProfileResult = clientWithBasicAuth("tenant", "pass123")
@@ -221,7 +222,7 @@ public class DemAmsLeaseTests {
     @DirtiesContext
     void shouldUpdateExistingLease() {
         LeaseRequest leaseRequest = new LeaseRequest(70L, 11L, LocalDate.of(2026, 6, 2),
-                LocalDate.of(2027, 3, 2), BillingType.MONTHLY, 4501.00, 4502.00,  Lease.LeaseStatus.FINALIZED);
+                LocalDate.of(2027, 3, 2), BillingType.MONTHLY, 4501.00, 4502.00,  LeaseStatus.FINALIZED);
 
         EntityExchangeResult<LeaseResponse> result = clientWithBasicAuth("landlord", "word123")
                 .put()
@@ -240,7 +241,7 @@ public class DemAmsLeaseTests {
         assertThat(response.billing_type()).isEqualTo(BillingType.MONTHLY);
         assertThat(response.rent()).isEqualTo(4501.00);
         assertThat(response.deposit()).isEqualTo(4502.00);
-        assertThat(response.status()).isEqualTo(Lease.LeaseStatus.FINALIZED);
+        assertThat(response.status()).isEqualTo(LeaseStatus.FINALIZED);
         assertThat(response.created_at()).isNotNull();
         assertThat(response.updated_at()).isNotNull();
     }
@@ -248,7 +249,7 @@ public class DemAmsLeaseTests {
     @Test
     void shouldNotUpdateNonExistentLease() {
         LeaseRequest leaseRequest = new LeaseRequest(70L, 11L, LocalDate.of(2026, 6, 2),
-                LocalDate.of(2027, 3, 2), BillingType.MONTHLY, 4501.00, 4502.00,  Lease.LeaseStatus.FINALIZED);
+                LocalDate.of(2027, 3, 2), BillingType.MONTHLY, 4501.00, 4502.00,  LeaseStatus.FINALIZED);
 
         clientWithBasicAuth("landlord", "word123")
                 .put()
@@ -261,7 +262,7 @@ public class DemAmsLeaseTests {
     @Test
     void shouldNotUpdateLeaseTheyDoNotOwn() {
         LeaseRequest leaseRequest = new LeaseRequest(70L, 11L, LocalDate.of(2026, 6, 2),
-                LocalDate.of(2027, 3, 2), BillingType.MONTHLY, 4501.00, 4502.00,  Lease.LeaseStatus.FINALIZED);
+                LocalDate.of(2027, 3, 2), BillingType.MONTHLY, 4501.00, 4502.00,  LeaseStatus.FINALIZED);
 
         clientWithBasicAuth("landlord", "word123")
                 .put()

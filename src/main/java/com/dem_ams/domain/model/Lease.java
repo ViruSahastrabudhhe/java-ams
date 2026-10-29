@@ -1,6 +1,7 @@
 package com.dem_ams.domain.model;
 
 import com.dem_ams.domain.model.enums.BillingType;
+import com.dem_ams.domain.model.enums.LeaseStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,9 +17,6 @@ import java.time.LocalDateTime;
 @Table(name="leases")
 @NoArgsConstructor
 public class Lease {
-    public enum LeaseStatus {
-        DRAFT, TENANTS_SIGNING, READY_TO_SIGN, FINALIZED, EXPIRED
-    }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

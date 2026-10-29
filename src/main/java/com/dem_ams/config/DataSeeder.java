@@ -4,6 +4,7 @@ import com.dem_ams.constant.ApplicationConstants;
 import com.dem_ams.domain.exception.ResourceNotFoundException;
 import com.dem_ams.domain.model.*;
 import com.dem_ams.domain.model.enums.BillingType;
+import com.dem_ams.domain.model.enums.LeaseStatus;
 import com.dem_ams.domain.model.enums.UnitStatus;
 import com.dem_ams.domain.model.enums.UnitType;
 import com.dem_ams.repository.*;
@@ -237,10 +238,10 @@ public class DataSeeder implements CommandLineRunner {
         leases = List.of(
                 createLeaseHelper(
                         units.get(0), LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 1),
-                        units.get(0).getProperty().getBillingType(), units.get(0).getProperty().getPropertyValue(), 4500.00, Lease.LeaseStatus.DRAFT),
+                        units.get(0).getProperty().getBillingType(), units.get(0).getProperty().getPropertyValue(), 4500.00, LeaseStatus.DRAFT),
                 createLeaseHelper(
                         units.get(1), LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 1),
-                        units.get(1).getProperty().getBillingType(), units.get(1).getProperty().getPropertyValue(), 5500.00, Lease.LeaseStatus.DRAFT)
+                        units.get(1).getProperty().getBillingType(), units.get(1).getProperty().getPropertyValue(), 5500.00, LeaseStatus.DRAFT)
         );
     }
 
@@ -347,7 +348,7 @@ public class DataSeeder implements CommandLineRunner {
 
     private Lease createLeaseHelper(
             Unit unit, LocalDate startDate, LocalDate endDate,
-            BillingType billingType, Double rent, Double deposit, Lease.LeaseStatus status
+            BillingType billingType, Double rent, Double deposit, LeaseStatus status
     ) {
         Lease lease = new Lease();
         lease.setUnit(unit);

@@ -4,11 +4,14 @@ import com.dem_ams.domain.model.Lease;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.Set;
 
 public interface LeaseRepository extends JpaRepository<Lease, Long> {
 
@@ -30,6 +33,10 @@ public interface LeaseRepository extends JpaRepository<Lease, Long> {
     @Query("SELECT l FROM TenantProfile tp JOIN tp.leases l WHERE tp.user.id = :userId and tp.deletedAt is null")
     Page<Lease> findAllByTenantProfileUserId(@Param("userId") Long userId, PageRequest pageRequest);
 
-    @Query("SELECT l FROM Lease l WHERE l.endDate <= CURRENT_DATE and l.deletedAt is null")
-    Page<Lease> findExpiredByEndDate(PageRequest pageRequest);
+    @Query("SELECT l FROM Lease l WHERE l.endDate <= CURRENT_DATE and l.status != 'EXPIRED' and l.deletedAt is null")
+    Set<Lease> findExpiredByEndDate();
+
+    @Modifying
+    @Query("UPDATE Lease l SET l.status = 'EXPIRED' WHERE l.endDate <= CURRENT_DATE and l.status != 'EXPIRED' and l.deletedAt is null")
+    int expireLeases();
 }

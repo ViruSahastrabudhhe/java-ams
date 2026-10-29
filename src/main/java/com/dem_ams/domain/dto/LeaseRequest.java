@@ -2,6 +2,7 @@ package com.dem_ams.domain.dto;
 
 import com.dem_ams.domain.model.enums.BillingType;
 import com.dem_ams.domain.model.Lease;
+import com.dem_ams.domain.model.enums.LeaseStatus;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -14,6 +15,6 @@ public record LeaseRequest(
     BillingType billingType,
     Double rent,
     Double deposit,
-    Lease.LeaseStatus status
+    LeaseStatus status
 ) implements Serializable {
 }
